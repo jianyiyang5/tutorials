@@ -5,6 +5,7 @@ import os
 import torch
 import unicodedata
 import string
+import random
 
 all_letters = string.ascii_letters + " .,;'"
 n_letters = len(all_letters)
@@ -59,3 +60,15 @@ def lineToTensor(line):
     for li, letter in enumerate(line):
         tensor[li][0][letterToIndex(letter)] = 1
     return tensor
+
+
+def randomChoice(l):
+    return l[random.randint(0, len(l) - 1)]
+
+
+def randomTrainingExample(category_lines, all_categories):
+    category = randomChoice(all_categories)
+    line = randomChoice(category_lines[category])
+    category_tensor = torch.tensor([all_categories.index(category)], dtype=torch.long)
+    line_tensor = lineToTensor(line)
+    return category, line, category_tensor, line_tensor

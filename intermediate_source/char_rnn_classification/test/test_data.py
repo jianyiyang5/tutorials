@@ -36,6 +36,15 @@ class TestData(unittest.TestCase):
         self.assertTrue(torch.equal(tensor1, tensor2))
         self.assertEqual(tensor1.size(), torch.Size([17, 1, 57]))
 
+    def test_randomTrainingExample(self):
+        random.seed(0)
+        category_lines, all_categories = load_data('../../data/names/Chinese.txt')
+        category, line, category_tensor, line_tensor = randomTrainingExample(category_lines, all_categories)
+        self.assertEqual('Chinese', category)
+        self.assertEqual('Guan', line)
+        self.assertTrue(torch.equal(torch.tensor([all_categories.index(category)], dtype=torch.long), category_tensor))
+        self.assertTrue(torch.equal(lineToTensor(line), line_tensor))
+
 
 if __name__ == '__main__':
     unittest.main()
