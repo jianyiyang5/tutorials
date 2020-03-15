@@ -1,4 +1,3 @@
-import time
 from model import *
 from data import *
 from utils import *
@@ -23,12 +22,11 @@ def train_one_line(category_tensor, line_tensor, rnn, criterion=nn.NLLLoss(), le
     return output, loss.item()
 
 
-def train(rnn, category_lines, all_categories, n_iters=100000, print_every=5000, plot_every=1000):
+def train(rnn, category_lines, all_categories, criterion=nn.NLLLoss(), learning_rate=0.005, n_iters=100000,
+          print_every=5000, plot_every=1000):
     start = time.time()
     current_loss = 0
     all_losses = []
-    criterion = nn.NLLLoss()
-    learning_rate = 0.005
 
     for iter in range(1, n_iters + 1):
         category, line, category_tensor, line_tensor = randomTrainingExample(category_lines, all_categories)
