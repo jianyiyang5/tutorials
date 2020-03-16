@@ -19,9 +19,6 @@ if __name__ == '__main__':
     model = load_model('output/rnn.pt')
     model.eval()
     category_lines, all_categories = load_data()
-    predict(model, all_categories, 'Dovesky')
-    predict(model, all_categories, 'Jackson')
-    predict(model, all_categories, 'Satoshi')
-    predict(model, all_categories, 'Chan')
-    predict(model, all_categories, 'Jonas')
-    predict(model, all_categories, 'Joris')
+    names = ['Dovesky', 'Jackson', 'Satoshi', 'Chan', 'Jonas', 'Joris']
+    for name in names:
+        predict(model, all_categories, name)
