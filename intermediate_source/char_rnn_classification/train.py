@@ -44,10 +44,36 @@ def train(rnn, category_lines, all_categories, criterion=nn.NLLLoss(), learning_
     return all_losses
 
 
+# Just return an output given a line
+def evaluate(rnn, line_tensor):
+    hidden = rnn.initHidden()
+    for i in range(line_tensor.size()[0]):
+        output, hidden = rnn(line_tensor[i], hidden)
+    return output
+
+
+def create_confusion_matrix(rnn, category_lines, all_categories, n_confusion=10000):
+    n_categories = len(all_categories)
+    confusion = torch.zeros(n_categories, n_categories)
+    for i in range(n_confusion):
+        category, line, category_tensor, line_tensor = randomTrainingExample(category_lines, all_categories)
+        output = evaluate(rnn, line_tensor)
+        guess, guess_i = categoryFromOutput(output)
+        category_i = all_categories.index(category)
+        confusion[category_i][guess_i] += 1
+    # Normalize by dividing every row by its sum
+    for i in range(n_categories):
+        confusion[i] = confusion[i] / confusion[i].sum()
+    return confusion
+
+
 if __name__ == '__main__':
     n_hidden = 128
     category_lines, all_categories = load_data()
     n_categories = len(all_categories)
     rnn = RNN(n_letters, n_hidden, n_categories)
     all_losses = train(rnn, category_lines, all_categories)
-    print(all_losses)
+    # print(all_losses)
+    plot_losses(all_losses)
+    confusion = create_confusion_matrix(rnn, category_lines, all_categories)
+    plot_confusion_matrix(confusion, all_categories)
