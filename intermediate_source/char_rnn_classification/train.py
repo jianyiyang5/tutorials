@@ -58,7 +58,7 @@ def create_confusion_matrix(rnn, category_lines, all_categories, n_confusion=100
     for i in range(n_confusion):
         category, line, category_tensor, line_tensor = randomTrainingExample(category_lines, all_categories)
         output = evaluate(rnn, line_tensor)
-        guess, guess_i = categoryFromOutput(output)
+        guess, guess_i = categoryFromOutput(output, all_categories)
         category_i = all_categories.index(category)
         confusion[category_i][guess_i] += 1
     # Normalize by dividing every row by its sum
@@ -68,11 +68,15 @@ def create_confusion_matrix(rnn, category_lines, all_categories, n_confusion=100
 
 
 if __name__ == '__main__':
+    model_path = 'output/rnn.pt'
+    dn = os.path.dirname(model_path)
+    os.makedirs(dn, exist_ok=True)
     n_hidden = 128
     category_lines, all_categories = load_data()
     n_categories = len(all_categories)
     rnn = RNN(n_letters, n_hidden, n_categories)
     all_losses = train(rnn, category_lines, all_categories)
+    torch.save(rnn.state_dict(), model_path)
     # print(all_losses)
     plot_losses(all_losses)
     confusion = create_confusion_matrix(rnn, category_lines, all_categories)
