@@ -67,6 +67,22 @@ def create_confusion_matrix(rnn, category_lines, all_categories, n_confusion=100
     return confusion
 
 
+def save_model(input_size, hidden_size, output_size, model_dict, path):
+    torch.save({'input_size': input_size,
+                'hidden_size': hidden_size,
+                'output_size': output_size,
+                'model_dict': model_dict}, path)
+    print(f'Model is saved to {path}')
+
+
+def load_model(path):
+    checkpoint = torch.load(path)
+    model = RNN(checkpoint['input_size'], checkpoint['hidden_size'], checkpoint['output_size'])
+    model.load_state_dict(checkpoint['model_dict'])
+    print(f'Load model from {path}')
+    return model
+
+
 if __name__ == '__main__':
     model_path = 'output/rnn.pt'
     dn = os.path.dirname(model_path)
@@ -76,7 +92,7 @@ if __name__ == '__main__':
     n_categories = len(all_categories)
     rnn = RNN(n_letters, n_hidden, n_categories)
     all_losses = train(rnn, category_lines, all_categories)
-    torch.save(rnn.state_dict(), model_path)
+    save_model(n_letters, n_hidden, n_categories, rnn.state_dict(), model_path)
     # print(all_losses)
     plot_losses(all_losses)
     confusion = create_confusion_matrix(rnn, category_lines, all_categories)
