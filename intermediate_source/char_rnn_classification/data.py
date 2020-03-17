@@ -6,11 +6,12 @@ import torch
 import unicodedata
 import string
 import random
+import itertools
 
-all_letters = string.ascii_letters + " .,;'"
+all_letters = "▁" + string.ascii_letters + " .,;'"
 n_letters = len(all_letters)
 # Build the category_lines dictionary, a list of names per language
-
+PAD_token = 0
 
 def findFiles(path): return glob.glob(path)
 
@@ -46,6 +47,7 @@ def letterToIndex(letter):
     return all_letters.find(letter)
 
 
+
 # Just for demonstration, turn a letter into a <1 x n_letters> Tensor
 def letterToTensor(letter):
     tensor = torch.zeros(1, n_letters)
@@ -60,6 +62,22 @@ def lineToTensor(line):
     for li, letter in enumerate(line):
         tensor[li][0][letterToIndex(letter)] = 1
     return tensor
+
+
+def lineToIndex(line):
+    return [letterToIndex(l) for l in line]
+
+
+def zeroPadding(l, fillvalue=PAD_token):
+    return list(itertools.zip_longest(*l, fillvalue=fillvalue))
+
+
+def linesToTensor(lines):
+    indexes_batch = [lineToIndex(line) for line in lines]
+    lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
+    padList = zeroPadding(indexes_batch)
+    padVar = torch.LongTensor(padList)
+    return padVar, lengths
 
 
 def randomChoice(l):
