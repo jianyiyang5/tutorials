@@ -47,7 +47,6 @@ def letterToIndex(letter):
     return all_letters.find(letter)
 
 
-
 # Just for demonstration, turn a letter into a <1 x n_letters> Tensor
 def letterToTensor(letter):
     tensor = torch.zeros(1, n_letters)
@@ -78,6 +77,17 @@ def linesToTensor(lines):
     padList = zeroPadding(indexes_batch)
     padVar = torch.LongTensor(padList)
     return padVar, lengths
+
+
+def batch2TrainData(pair_batch):
+    pair_batch.sort(key=lambda x: len(x[0]), reverse=True)
+    input_batch, output_batch = [], []
+    for pair in pair_batch:
+        input_batch.append(pair[0])
+        output_batch.append(pair[1])
+    inp, lengths = linesToTensor(input_batch)
+    target = torch.LongTensor(output_batch)
+    return inp, lengths, target
 
 
 def randomChoice(l):

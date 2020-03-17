@@ -53,6 +53,16 @@ class TestData(unittest.TestCase):
         expect = torch.tensor([[1, 4], [2, 5], [3, 6], [4, 0]])
         self.assertTrue(torch.equal(expect, input))
 
+    def test_batch2TrainData(self):
+        pairs = [['abc', 2], ['de', 7]]
+        inp, lengths, target = batch2TrainData(pairs)
+        self.assertTrue(torch.equal(torch.tensor([3, 2]), lengths))
+        expect = torch.tensor([[1, 4],
+                               [2, 5],
+                               [3, 0]])
+        self.assertTrue(torch.equal(expect, inp))
+        self.assertTrue(torch.equal(torch.tensor([2, 7]), target))
+
 
 if __name__ == '__main__':
     unittest.main()
