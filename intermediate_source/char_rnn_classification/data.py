@@ -80,12 +80,12 @@ def linesToTensor(lines):
     return padVar, lengths
 
 
-def batch2TrainData(pair_batch):
+def batch2TrainData(pair_batch, all_categories):
     pair_batch.sort(key=lambda x: len(x[0]), reverse=True)
     input_batch, output_batch = [], []
     for pair in pair_batch:
         input_batch.append(pair[0])
-        output_batch.append(pair[1])
+        output_batch.append(all_categories.index(pair[1]))
     inp, lengths = linesToTensor(input_batch)
     target = torch.LongTensor(output_batch)
     return inp, lengths, target
@@ -94,7 +94,7 @@ def batch2TrainData(pair_batch):
 def create_batches(category_lines, batch_size):
     training_examples = []
     for category, lines in category_lines.items():
-        training_examples.extend([category, line] for line in lines)
+        training_examples.extend([line, category] for line in lines)
     random.shuffle(training_examples)
     return batch(training_examples, batch_size)
 

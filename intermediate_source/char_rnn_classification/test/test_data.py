@@ -54,8 +54,8 @@ class TestData(unittest.TestCase):
         self.assertTrue(torch.equal(expect, input))
 
     def test_batch2TrainData(self):
-        pairs = [['abc', 2], ['de', 7]]
-        inp, lengths, target = batch2TrainData(pairs)
+        pairs = [['abc', '2'], ['de', '7']]
+        inp, lengths, target = batch2TrainData(pairs, [str(i) for i in range(8)])
         self.assertTrue(torch.equal(torch.tensor([3, 2]), lengths))
         expect = torch.tensor([[1, 4],
                                [2, 5],
