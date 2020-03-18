@@ -13,6 +13,7 @@ n_letters = len(all_letters)
 # Build the category_lines dictionary, a list of names per language
 PAD_token = 0
 
+
 def findFiles(path): return glob.glob(path)
 
 
@@ -88,6 +89,20 @@ def batch2TrainData(pair_batch):
     inp, lengths = linesToTensor(input_batch)
     target = torch.LongTensor(output_batch)
     return inp, lengths, target
+
+
+def create_batches(category_lines, batch_size):
+    training_examples = []
+    for category, lines in category_lines.items():
+        training_examples.extend([category, line] for line in lines)
+    random.shuffle(training_examples)
+    return batch(training_examples, batch_size)
+
+
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
 
 
 def randomChoice(l):
