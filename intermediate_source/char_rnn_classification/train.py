@@ -8,9 +8,6 @@ def categoryFromOutput(output, all_categories):
     category_i = top_i[0].item()
     return all_categories[category_i], category_i
 
-#TODO batch train
-#x2 = x.transpose(0, 1)
-#y = x2[torch.arange(x2.size(0)), idx]
 
 def train_one_line(category_tensor, line_tensor, rnn, criterion=nn.NLLLoss(), learning_rate=0.005):
     hidden = rnn.initHidden()
