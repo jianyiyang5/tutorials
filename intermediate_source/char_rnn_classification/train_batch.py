@@ -24,7 +24,7 @@ def train_one_line(category_tensor, line_tensor, rnn, criterion=nn.NLLLoss(), le
 
 
 def train(rnn, category_lines, all_categories, batch_size=64, criterion=nn.NLLLoss(), learning_rate=0.005, epochs=300,
-          print_every=5000, plot_every=1000):
+          print_every=10, plot_every=10):
     start = time.time()
     current_loss = 0
     all_losses = []
@@ -46,11 +46,13 @@ def train(rnn, category_lines, all_categories, batch_size=64, criterion=nn.NLLLo
                 # p.data.add_(-learning_rate, p.grad.data)
         guess, guess_i = categoryFromOutput(output[0], all_categories)
         correct = '✓' if guess == batch[0][1] else '✗ (%s)' % batch[0][1]
-        print('%d %d%% (%s) %.4f %s / %s %s %.10f' % (i, i / epochs * 100, timeSince(start), loss, batch[0], guess, correct, learning_rate))
-        all_losses.append(current_loss/j)
+        if i % print_every == 0:
+            print('%d %d%% (%s) %.4f %s / %s %s %.10f' % (i, i / epochs * 100, timeSince(start), loss, batch[0], guess, correct, learning_rate))
+        if i % plot_every == 0:
+            all_losses.append(current_loss/j)
         current_loss = 0
         if len(all_losses) >= 2 and all_losses[-1] > all_losses[-2]:
-            learning_rate *= 0.9
+            learning_rate *= 0.95
     return all_losses
 
 
