@@ -1,5 +1,4 @@
 import torch.nn as nn
-from torch.nn.modules.rnn import RNN
 from data import *
 from utils import *
 from model import EncoderRNN
@@ -31,7 +30,7 @@ def train(rnn, category_lines, all_categories, batch_size=64, criterion=nn.NLLLo
     all_losses = []
 
     for i in range(epochs):
-        batches = create_batches(category_lines, batch_size)
+        batches = create_batches(category_lines, batch_size, seed=i)
         j = 0
         for batch in batches:
             inp, lengths, target = batch2TrainData(batch, all_categories)

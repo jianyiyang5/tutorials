@@ -91,10 +91,11 @@ def batch2TrainData(pair_batch, all_categories):
     return inp, lengths, target
 
 
-def create_batches(category_lines, batch_size):
+def create_batches(category_lines, batch_size, seed=7):
     training_examples = []
     for category, lines in category_lines.items():
         training_examples.extend([line, category] for line in lines)
+    random.seed(seed)
     random.shuffle(training_examples)
     return batch(training_examples, batch_size)
 
