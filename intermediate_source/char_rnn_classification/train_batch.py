@@ -46,7 +46,7 @@ def train(rnn, category_lines, all_categories, batch_size=64, criterion=nn.NLLLo
                 # p.data.add_(-learning_rate, p.grad.data)
         guess, guess_i = categoryFromOutput(output[0], all_categories)
         correct = '✓' if guess == batch[0][1] else '✗ (%s)' % batch[0][1]
-        print('%d %d%% (%s) %.4f %s / %s %s %.6f' % (i, i / epochs * 100, timeSince(start), loss, batch[0], guess, correct, learning_rate))
+        print('%d %d%% (%s) %.4f %s / %s %s %.10f' % (i, i / epochs * 100, timeSince(start), loss, batch[0], guess, correct, learning_rate))
         all_losses.append(current_loss/j)
         current_loss = 0
         if len(all_losses) >= 2 and all_losses[-1] > all_losses[-2]:
