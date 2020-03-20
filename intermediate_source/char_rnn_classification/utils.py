@@ -15,6 +15,7 @@ def timeSince(since):
 def plot_losses(all_losses):
     plt.figure()
     plt.plot(all_losses)
+    plt.show()
 
 
 def plot_confusion_matrix(confusion, all_categories):

@@ -21,6 +21,6 @@ if __name__ == '__main__':
     model = load_model('output/rnn_batch.pt')
     model.eval()
     category_lines, all_categories = load_data()
-    names = ['Dovesky', 'Jackson', 'Satoshi', 'Chan', 'Jonas', 'Joris']
+    names = ['Dovesky', 'Jackson', 'Satoshi', 'Chan', 'Jonas', 'Joris', 'Brannon', 'Yang']
     for name in names:
         predict(model, all_categories, name)
