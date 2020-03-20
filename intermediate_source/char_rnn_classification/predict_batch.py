@@ -6,7 +6,7 @@ def predict(model, all_categories, input_line, n_predictions=3):
     with torch.no_grad():
         line_tensor, lens = linesToTensor([input_line])
         output = evaluate(model, line_tensor, lens)
-        output = output.squeeze(dim=1)
+        output = output.squeeze(dim=1)[-1].unsqueeze(0)
         # Get top N categories
         topv, topi = output.topk(n_predictions, 1, True)
         predictions = []
@@ -21,6 +21,7 @@ if __name__ == '__main__':
     model = load_model('output/rnn_batch.pt')
     model.eval()
     category_lines, all_categories = load_data()
-    names = ['Dovesky', 'Jackson', 'Satoshi', 'Chan', 'Jonas', 'Joris', 'Brannon', 'Yang', 'Panayiotopoulos', 'Chrysanthopoulos', 'Abatantuono', 'Schrijnemakers']
+    names = ['Dovesky', 'Jackson', 'Satoshi', 'Chan', 'Jonas', 'Joris', 'Brannon', 'Yang', 'Panayiotopoulos',
+             'Matthias', 'Stephan', 'Luke', 'Levis', 'Hana', 'Ernie', 'Bert', 'Emilie']
     for name in names:
         predict(model, all_categories, name)
