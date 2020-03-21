@@ -75,7 +75,7 @@ if __name__ == '__main__':
     hidden_size = 128
     rnn = RNN(n_letters, n_categories, hidden_size, n_letters)
     all_losses = train(rnn, category_lines, all_categories, n_iters=100000)
-    plot_losses(all_losses)
+    # plot_losses(all_losses)
 
     samples(rnn, 'Russian',all_categories, 'RUS')
     samples(rnn, 'German', all_categories,'GER')
