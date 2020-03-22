@@ -38,4 +38,4 @@ if __name__ == '__main__':
     samples(model, 'Russian', all_categories, 'RUS')
     samples(model, 'German', all_categories, 'GER')
     samples(model, 'Spanish', all_categories, 'SPA')
-    samples(model, 'Chinese', all_categories, 'CHI')
+    samples(model, 'Chinese', all_categories, 'CHINESE')
