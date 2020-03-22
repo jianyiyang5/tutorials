@@ -117,3 +117,4 @@ cleanup.sh
 *.swp
 /intermediate_source/char_rnn_classification/output/
 /src/pytorch-sphinx-theme/
+/intermediate_source/char_rnn_generation/output/

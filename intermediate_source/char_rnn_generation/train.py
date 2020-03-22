@@ -40,33 +40,21 @@ def train(rnn, category_lines, all_categories, n_iters=100000, print_every=5000,
     return all_losses
 
 
-# Sample from a category and starting letter
-def sample(rnn, category, all_categories, start_letter='A'):
-    with torch.no_grad():  # no need to track history in sampling
-        category_tensor = categoryTensor(category, all_categories)
-        input = inputTensor(start_letter)
-        hidden = rnn.initHidden()
-
-        output_name = start_letter
-
-        for i in range(max_length):
-            output, hidden = rnn(category_tensor, input[0], hidden)
-            topv, topi = output.topk(1)
-            topi = topi[0][0]
-            if topi == n_letters - 1:
-                break
-            else:
-                letter = all_letters[topi]
-                output_name += letter
-            input = inputTensor(letter)
-
-        return output_name
+def save_model(input_size, n_categories, hidden_size, output_size, model_dict, path):
+    torch.save({'input_size': input_size,
+                'n_categories': n_categories,
+                'hidden_size': hidden_size,
+                'output_size': output_size,
+                'model_dict': model_dict}, path)
+    print(f'Model is saved to {path}')
 
 
-# Get multiple samples from one category and multiple starting letters
-def samples(rnn, category, all_categories, start_letters='ABC'):
-    for start_letter in start_letters:
-        print(sample(rnn, category, all_categories, start_letter))
+def load_model(path):
+    checkpoint = torch.load(path)
+    model = RNN(checkpoint['input_size'], checkpoint['n_categories'], checkpoint['hidden_size'], checkpoint['output_size'])
+    model.load_state_dict(checkpoint['model_dict'])
+    print(f'Load model from {path}')
+    return model
 
 
 if __name__ == '__main__':
@@ -75,9 +63,6 @@ if __name__ == '__main__':
     hidden_size = 128
     rnn = RNN(n_letters, n_categories, hidden_size, n_letters)
     all_losses = train(rnn, category_lines, all_categories, n_iters=100000)
+    save_model(n_letters, n_categories, hidden_size, n_letters, rnn.state_dict(), 'output/rnn.pt')
     # plot_losses(all_losses)
 
-    samples(rnn, 'Russian',all_categories, 'RUS')
-    samples(rnn, 'German', all_categories,'GER')
-    samples(rnn, 'Spanish',all_categories, 'SPA')
-    samples(rnn, 'Chinese',all_categories, 'CHI')
