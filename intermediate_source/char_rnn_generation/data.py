@@ -64,6 +64,11 @@ def categoryTensor(category, all_categories):
     return tensor
 
 
+def categoryIdxTensor(categories, all_categories):
+    li = [all_categories.index(category) for category in categories]
+    return torch.LongTensor(li)
+
+
 # One-hot matrix of first to last letters (not including EOS) for input
 def inputTensor(line):
     tensor = torch.zeros(len(line), 1, n_letters)
