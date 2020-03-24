@@ -66,6 +66,7 @@ class TestData(unittest.TestCase):
         print('target:', target)
         self.assertEqual(torch.Size([8, 3]), mask.size())
         self.assertEqual(8, max_target_len)
+        print('max len:', max(lengths).item())
 
 
 if __name__ == '__main__':
