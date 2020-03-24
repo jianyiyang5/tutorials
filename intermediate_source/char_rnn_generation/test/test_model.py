@@ -1,7 +1,7 @@
 import unittest
 from model import EncoderRNN
 from data import *
-
+from train_batch import *
 
 class TestModel(unittest.TestCase):
     def test_rnn(self):
@@ -10,6 +10,7 @@ class TestModel(unittest.TestCase):
         category_lines, all_categories = load_data('../../data/names/*.txt')
         batches = create_batches(category_lines, batch_size)
         batch = next(batches)
+        print('batch:', batch)
         inp, lengths, categories, target, mask, max_target_len = batch2TrainData(batch, all_categories)
         max_len = max(lengths).item()
 
@@ -19,8 +20,18 @@ class TestModel(unittest.TestCase):
         rnn = EncoderRNN(n_hidden_cat, n_hidden, torch.nn.Embedding(n_categories, n_hidden_cat),
                          torch.nn.Embedding(n_letters, n_hidden), n_letters)
         outputs, hidden = rnn(inp, categories, lengths)
-        print(outputs)
+        # print(outputs)
+        print('outputs size:', outputs.size())
         self.assertEqual(torch.Size([max_len, batch_size, n_letters]), outputs.size())
+        outputs = outputs.transpose(0, 1)
+        print('outputs size after transpose:', outputs.size())
+        print('lengths:', lengths)
+        output = outputs[torch.arange(outputs.size(0)), lengths-1]
+        print(output)
+        print('output size:', output.size())
+
+        mask_loss, nTotal = maskNLLLoss(output, target[0], mask[0])
+        print(mask_loss, nTotal)
 
 
 if __name__ == '__main__':
