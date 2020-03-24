@@ -6,10 +6,12 @@ import unicodedata
 import string
 import random
 import torch
+import itertools
 
 
-all_letters = string.ascii_letters + " .,;'-"
+all_letters = "▁" + string.ascii_letters + " .,;'-"
 n_letters = len(all_letters) + 1 # Plus EOS marker
+PAD_token = 0
 
 
 def findFiles(path): return glob.glob(path)
@@ -64,11 +66,6 @@ def categoryTensor(category, all_categories):
     return tensor
 
 
-def categoryIdxTensor(categories, all_categories):
-    li = [all_categories.index(category) for category in categories]
-    return torch.LongTensor(li)
-
-
 # One-hot matrix of first to last letters (not including EOS) for input
 def inputTensor(line):
     tensor = torch.zeros(len(line), 1, n_letters)
@@ -92,4 +89,83 @@ def randomTrainingExample(category_lines, all_categories):
     input_line_tensor = inputTensor(line)
     target_line_tensor = targetTensor(line)
     return category_tensor, input_line_tensor, target_line_tensor
+
+
+def categoryIdxTensor(categories, all_categories):
+    li = [all_categories.index(category) for category in categories]
+    return torch.LongTensor(li)
+
+
+def letterToIndex(letter):
+    return all_letters.find(letter)
+
+
+def lineToIndex(line):
+    return [letterToIndex(l) for l in line]
+
+
+def zeroPadding(l, fillvalue=PAD_token):
+    return list(itertools.zip_longest(*l, fillvalue=fillvalue))
+
+
+def binaryMatrix(l, value=PAD_token):
+    m = []
+    for i, seq in enumerate(l):
+        m.append([])
+        for token in seq:
+            if token == value:
+                m[i].append(0)
+            else:
+                m[i].append(1)
+    return m
+
+
+def inputVar(lines):
+    indexes_batch = [lineToIndex(line) for line in lines]
+    lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
+    padList = zeroPadding(indexes_batch)
+    padVar = torch.LongTensor(padList)
+    return padVar, lengths
+
+
+# Returns padded target sequence tensor, padding mask, and max target length
+def outputVar(lines):
+    indexes_batch = [lineToIndex(sentence) for sentence in lines]
+    for idx in indexes_batch:
+        idx.append(n_letters - 1) # EOS
+    max_target_len = max([len(indexes) for indexes in indexes_batch])
+    padList = zeroPadding(indexes_batch)
+    mask = binaryMatrix(padList)
+    mask = torch.BoolTensor(mask)
+    padVar = torch.LongTensor(padList)
+    return padVar, mask, max_target_len
+
+
+def batch2TrainData(pair_batch, all_categories):
+    pair_batch.sort(key=lambda x: len(x[0]), reverse=True)
+    input_batch, category_batch = [], []
+    for pair in pair_batch:
+        input_batch.append(pair[0])
+        category_batch.append(all_categories.index(pair[1]))
+    inp, lengths = inputVar(input_batch)
+    target, mask, max_target_len = outputVar(input_batch)
+    categories = torch.LongTensor(category_batch)
+    return inp, lengths, categories, target, mask, max_target_len
+
+
+def create_batches(category_lines, batch_size):
+    training_examples = []
+    for category, lines in category_lines.items():
+        random.shuffle(lines)
+        training_examples.extend([line, category] for line in lines[:batch_size])
+    random.shuffle(training_examples)
+    return batch(training_examples, batch_size)
+
+
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
+
+
 

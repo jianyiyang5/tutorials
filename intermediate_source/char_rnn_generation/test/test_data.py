@@ -48,6 +48,25 @@ class TestData(unittest.TestCase):
         print(combined)
         self.assertEqual(combined.size(), torch.Size([5, 2, 12]))
 
+    def test_batch2TrainData(self):
+        random.seed(2)
+        category_lines, all_categories = load_data('../../data/names/*.txt')
+        batches = create_batches(category_lines, 3)
+        batch = next(batches)
+        print('batch:', batch)
+        inp, lengths, categories, target, mask, max_target_len = batch2TrainData(batch, all_categories)
+        print('input:', inp)
+        # print(inp.size())
+        self.assertEqual(torch.Size([7, 3]), inp.size())
+        self.assertEqual(torch.Size([3]), lengths.size())
+        print('lengths:', lengths)
+        self.assertEqual(torch.Size([3]), categories.size())
+        print('categories:', categories)
+        self.assertEqual(torch.Size([8, 3]), target.size())
+        print('target:', target)
+        self.assertEqual(torch.Size([8, 3]), mask.size())
+        self.assertEqual(8, max_target_len)
+
 
 if __name__ == '__main__':
     unittest.main()

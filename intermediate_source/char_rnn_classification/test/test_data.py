@@ -48,7 +48,7 @@ class TestData(unittest.TestCase):
 
     def test_linesToTensor(self):
         lines = ['abcd', 'def']
-        input, lens = linesToTensor(lines)
+        input, lens = inputVar(lines)
         self.assertTrue(torch.equal(torch.tensor([4, 3]), lens))
         expect = torch.tensor([[1, 4], [2, 5], [3, 6], [4, 0]])
         self.assertTrue(torch.equal(expect, input))

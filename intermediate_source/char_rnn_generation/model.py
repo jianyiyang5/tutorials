@@ -47,6 +47,7 @@ class EncoderRNN(nn.Module):
         # Convert word indexes to embeddings
         embedded = self.embedding(input_seq)
         category_embedded = self.category_embedding(cat_seq)
+        # repeat with the max seq length
         category_embedded = category_embedded.repeat(input_lengths[0], 1, 1)
         combined = torch.cat(embedded, category_embedded, 2)
         # Pack padded batch of sequences for RNN module
