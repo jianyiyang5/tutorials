@@ -45,7 +45,8 @@ class TestData(unittest.TestCase):
         print(input_embeded.size())
 
         combined = torch.cat((input_embeded, embedded), 2)
-        print(combined.size())
+        print(combined)
+        self.assertEqual(combined.size(), torch.Size([5, 2, 12]))
 
 
 if __name__ == '__main__':
