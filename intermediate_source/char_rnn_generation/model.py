@@ -40,7 +40,7 @@ class EncoderRNN(nn.Module):
         #   because our input size is a word embedding with number of features == hidden_size
         self.gru = nn.GRU(cat_hidden_size+hidden_size, hidden_size, n_layers,
                           dropout=(0 if n_layers == 1 else dropout), bidirectional=False)
-        self.softmax = nn.LogSoftmax(dim=2)
+        self.softmax = nn.Softmax(dim=2)
         self.linear = nn.Linear(hidden_size, output_size)
 
     def forward(self, input_seq, cat_seq, input_lengths, hidden=None):

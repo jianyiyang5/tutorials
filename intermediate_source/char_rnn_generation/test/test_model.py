@@ -3,6 +3,7 @@ from model import EncoderRNN
 from data import *
 from train_batch import *
 
+
 class TestModel(unittest.TestCase):
     def test_rnn(self):
         random.seed(2)
@@ -19,6 +20,7 @@ class TestModel(unittest.TestCase):
         n_categories = len(all_categories)
         rnn = EncoderRNN(n_hidden_cat, n_hidden, torch.nn.Embedding(n_categories, n_hidden_cat),
                          torch.nn.Embedding(n_letters, n_hidden), n_letters)
+        rnn.zero_grad()
         outputs, hidden = rnn(inp, categories, lengths)
         # print(outputs)
         print('outputs size:', outputs.size())
@@ -32,6 +34,9 @@ class TestModel(unittest.TestCase):
 
         mask_loss, nTotal = maskNLLLoss(output, target[0], mask[0])
         print(mask_loss, nTotal)
+        # print(next(rnn.parameters()).grad.data)
+        mask_loss.backward()
+        print(next(rnn.parameters()).grad.data)
 
 
 if __name__ == '__main__':
