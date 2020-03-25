@@ -23,6 +23,7 @@ def train(rnn, category_lines, all_categories, batch_size=64, criterion=maskNLLL
         n_totals = 0
         batches = create_batches(category_lines, batch_size)
         j = 0
+        # TODO no teacher forcing
         for batch in batches:
             rnn.zero_grad()
             inp, lengths, categories, target, mask, max_target_len = batch2TrainData(batch, all_categories)
