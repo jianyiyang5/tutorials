@@ -24,6 +24,7 @@ def train(rnn, category_lines, all_categories, batch_size=64, criterion=maskNLLL
         batches = create_batches(category_lines, batch_size)
         j = 0
         for batch in batches:
+            rnn.zero_grad()
             inp, lengths, categories, target, mask, max_target_len = batch2TrainData(batch, all_categories)
             j += 1
             outputs, _ = rnn(inp, categories, lengths) #seq-len, batch, outsize
