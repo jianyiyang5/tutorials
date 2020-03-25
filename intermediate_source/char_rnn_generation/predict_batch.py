@@ -29,7 +29,7 @@ def sample(rnn, category, all_categories, start_letter='A', max_length=20):
 # Get multiple samples from one category and multiple starting letters
 def samples(rnn, category, all_categories, start_letters='ABC'):
     for start_letter in start_letters:
-        print(sample(rnn, category, all_categories, start_letter))
+        print(category, start_letter, sample(rnn, category, all_categories, start_letter))
 
 
 if __name__ == '__main__':

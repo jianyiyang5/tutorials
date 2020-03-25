@@ -14,7 +14,7 @@ def maskNLLLoss(inp, target, mask, device=None):
     return loss, nTotal.item()
 
 
-def train(rnn, category_lines, all_categories, batch_size=64, criterion=maskNLLLoss, learning_rate=0.005, epochs=600,
+def train(rnn, category_lines, all_categories, batch_size=64, criterion=maskNLLLoss, learning_rate=0.5, epochs=600,
           print_every=10, plot_every=10):
     start = time.time()
     current_loss = 0
