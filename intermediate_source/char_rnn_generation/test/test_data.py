@@ -62,10 +62,10 @@ class TestData(unittest.TestCase):
         print('lengths:', lengths)
         self.assertEqual(torch.Size([3]), categories.size())
         print('categories:', categories)
-        self.assertEqual(torch.Size([8, 3]), target.size())
+        self.assertEqual(torch.Size([7, 3]), target.size())
         print('target:', target)
-        self.assertEqual(torch.Size([8, 3]), mask.size())
-        self.assertEqual(8, max_target_len)
+        self.assertEqual(torch.Size([7, 3]), mask.size())
+        self.assertEqual(7, max_target_len)
         print('max len:', max(lengths).item())
 
 

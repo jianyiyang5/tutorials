@@ -130,7 +130,7 @@ def inputVar(lines):
 
 # Returns padded target sequence tensor, padding mask, and max target length
 def outputVar(lines):
-    indexes_batch = [lineToIndex(sentence) for sentence in lines]
+    indexes_batch = [lineToIndex(sentence[1:]) for sentence in lines]
     for idx in indexes_batch:
         idx.append(n_letters - 1) # EOS
     max_target_len = max([len(indexes) for indexes in indexes_batch])

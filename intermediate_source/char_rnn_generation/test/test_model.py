@@ -28,13 +28,19 @@ class TestModel(unittest.TestCase):
         outputs = outputs.transpose(0, 1)
         print('outputs size after transpose:', outputs.size())
         print('lengths:', lengths)
-        output = outputs[torch.arange(outputs.size(0)), lengths-1]
-        print(output)
-        print('output size:', output.size())
-
-        mask_loss, nTotal = maskNLLLoss(output, target[0], mask[0])
-        print(mask_loss, nTotal)
+        # output = outputs[torch.arange(outputs.size(0)), lengths-1]
+        # output = outputs[torch.arange(outputs.size(0)), 0]
+        # print(output)
+        # print('output size:', output.size())
+        #
+        # mask_loss, nTotal = maskNLLLoss(output, target[0], mask[0])
+        # print(mask_loss, nTotal)
+        # # print(next(rnn.parameters()).grad.data)
+        # mask_loss.backward()
         # print(next(rnn.parameters()).grad.data)
+
+        mask_loss, nTotal = maskNLLLoss(outputs.transpose(0, 1), target, mask)
+        print(mask_loss, nTotal)
         mask_loss.backward()
         print(next(rnn.parameters()).grad.data)
 
