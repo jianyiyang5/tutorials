@@ -40,8 +40,8 @@ def train(rnn, category_lines, all_categories, batch_size=64, criterion=maskNLLL
         if i % plot_every == 0:
             all_losses.append(current_loss/n_totals)
         current_loss = 0
-        # if len(all_losses) >= 2 and all_losses[-1] > all_losses[-2]:
-        #     learning_rate *= 0.95
+        if len(all_losses) >= 2 and all_losses[-1] > all_losses[-2]:
+            learning_rate *= 0.95
     return all_losses
 
 
