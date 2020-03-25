@@ -14,7 +14,7 @@ def maskNLLLoss(inp, target, mask, device=None):
     return loss, nTotal.item()
 
 
-def train(rnn, category_lines, all_categories, batch_size=64, criterion=maskNLLLoss, learning_rate=0.005, epochs=300,
+def train(rnn, category_lines, all_categories, batch_size=64, criterion=maskNLLLoss, learning_rate=0.005, epochs=600,
           print_every=10, plot_every=10):
     start = time.time()
     current_loss = 0
@@ -73,8 +73,8 @@ if __name__ == '__main__':
     model_path = 'output/rnn_batch.pt'
     dn = os.path.dirname(model_path)
     os.makedirs(dn, exist_ok=True)
-    n_hidden = 64
-    n_hidden_cat = 8
+    n_hidden = 128
+    n_hidden_cat = 16
     category_lines, all_categories = load_data()
     n_categories = len(all_categories)
     rnn = EncoderRNN(n_hidden_cat, n_hidden, torch.nn.Embedding(n_categories, n_hidden_cat),
