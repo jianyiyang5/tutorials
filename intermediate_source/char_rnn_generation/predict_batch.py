@@ -36,7 +36,6 @@ if __name__ == '__main__':
     category_lines, all_categories = load_data()
     model = load_model('output/rnn_batch.pt')
     model.eval()
-    samples(model, 'Russian', all_categories, 'RUS')
-    samples(model, 'German', all_categories, 'GER')
-    samples(model, 'Spanish', all_categories, 'SPA')
-    samples(model, 'Chinese', all_categories, 'CHINESE')
+    for national in ['Russian', 'German', 'Spanish', 'Chinese', 'Korean', 'Japanese', 'French', 'Italian', 'English']:
+        samples(model, national, all_categories, string.ascii_uppercase)
+        print()
