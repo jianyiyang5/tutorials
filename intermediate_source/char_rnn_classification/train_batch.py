@@ -23,7 +23,7 @@ def train_one_line(category_tensor, line_tensor, rnn, criterion=nn.NLLLoss(), le
     return output, loss.item()
 
 
-def train(rnn, category_lines, all_categories, batch_size=64, criterion=nn.NLLLoss(), learning_rate=0.005, epochs=300,
+def train(rnn, category_lines, all_categories, batch_size=64, criterion=nn.NLLLoss(), learning_rate=0.01, epochs=300,
           print_every=10, plot_every=10):
     start = time.time()
     current_loss = 0
