@@ -19,25 +19,26 @@ def train(rnn, category_lines, all_categories, batch_size=64, criterion=maskNLLL
     start = time.time()
     current_loss = 0
     all_losses = []
-
     for i in range(epochs):
+        n_totals = 0
         batches = create_batches(category_lines, batch_size)
         j = 0
         for batch in batches:
             inp, lengths, categories, target, mask, max_target_len = batch2TrainData(batch, all_categories)
             j += 1
-            outputs, _ = rnn(inp, lengths) #seq-len, batch, outsize
-            outputs = outputs.transpose(0, 1)
-            loss = criterion(outputs, target)
+            outputs, _ = rnn(inp, categories, lengths) #seq-len, batch, outsize
+            loss, nTotal = criterion(outputs, target, mask)
             loss.backward()
-            current_loss += loss.item()
+            current_loss += loss.item()*nTotal
+            n_totals += nTotal
             for p in rnn.parameters():
                 # p.data.add_(-learning_rate, p.grad.data/lengths.size(0))
                 p.data.add_(-learning_rate, p.grad.data)
         if i % print_every == 0:
-            print('%d %d%% (%s) %.4f %s / %.10f' % (i, i / epochs * 100, timeSince(start), loss, batch[0], learning_rate))
+            print(n_totals, current_loss)
+            print('%d %d%% (%s) %.4f %s / %.10f' % (i, i / epochs * 100, timeSince(start), current_loss/n_totals, batch[0], learning_rate))
         if i % plot_every == 0:
-            all_losses.append(current_loss/j)
+            all_losses.append(current_loss/n_totals)
         current_loss = 0
         # if len(all_losses) >= 2 and all_losses[-1] > all_losses[-2]:
         #     learning_rate *= 0.95
