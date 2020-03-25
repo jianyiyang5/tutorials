@@ -45,6 +45,29 @@ def train(rnn, category_lines, all_categories, batch_size=64, criterion=maskNLLL
     return all_losses
 
 
+def save_model(n_hidden_cat, n_hidden, n_categories, n_letters, model_dict, path):
+    torch.save({'n_letters': n_letters,
+                'n_categories': n_categories,
+                'n_hidden_cat': n_hidden_cat,
+                'n_hidden': n_hidden,
+                'model_dict': model_dict}, path)
+    print(f'Model is saved to {path}')
+
+
+def load_model(path):
+    checkpoint = torch.load(path)
+    n_letters = checkpoint['n_letters']
+    n_categories = checkpoint['n_categories']
+    n_hidden_cat = checkpoint['n_hidden_cat']
+    n_hidden = checkpoint['n_hidden']
+    model_dict = checkpoint['model_dict']
+    model = EncoderRNN(n_hidden_cat, n_hidden, torch.nn.Embedding(n_categories, n_hidden_cat),
+                         torch.nn.Embedding(n_letters, n_hidden), n_letters)
+    model.load_state_dict(model_dict)
+    print(f'Load model from {path}')
+    return model
+
+
 if __name__ == '__main__':
     model_path = 'output/rnn_batch.pt'
     dn = os.path.dirname(model_path)
@@ -55,6 +78,7 @@ if __name__ == '__main__':
     n_categories = len(all_categories)
     rnn = EncoderRNN(n_hidden_cat, n_hidden, torch.nn.Embedding(n_categories, n_hidden_cat),
                          torch.nn.Embedding(n_letters, n_hidden), n_letters)
+    save_model(n_hidden_cat, n_hidden, n_categories, n_letters, rnn.state_dict(), model_path)
     all_losses = train(rnn, category_lines, all_categories)
     # save_model(n_letters, n_hidden, n_categories, rnn.state_dict(), model_path)
     plot_losses(all_losses)
