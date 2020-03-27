@@ -1,9 +1,13 @@
 import unicodedata
 import re
 import torch
+import itertools
+import random
 
-SOS_token = 0
-EOS_token = 1
+PAD_token = 0  # Used for padding short sentences
+SOS_token = 1  # Start-of-sentence token
+EOS_token = 2  # End-of-sentence token
+UNK_token = 3
 MAX_LENGTH = 10
 
 eng_prefixes = (
@@ -21,8 +25,8 @@ class Lang:
         self.name = name
         self.word2index = {}
         self.word2count = {}
-        self.index2word = {0: "SOS", 1: "EOS"}
-        self.n_words = 2  # Count SOS and EOS
+        self.index2word = {0: 'PAD', 1: "SOS", 2: "EOS", 3: 'UNK'}
+        self.n_words = 4 # Count SOS and EOS
 
     def addSentence(self, sentence):
         for word in sentence.split(' '):
@@ -125,3 +129,63 @@ def tensorsFromPair(pair, input_lang, output_lang, device):
     target_tensor = tensorFromSentence(output_lang, pair[1], device)
     return input_tensor, target_tensor
 
+
+# -----------================Batchify==================------------------
+def indexesFromSentence2(lang, sentence):
+    return [lang.word2index[word] if word in lang.word2index else UNK_token
+            for word in sentence.split(' ')] + [EOS_token]
+
+
+def zeroPadding(l, fillvalue=PAD_token):
+    return list(itertools.zip_longest(*l, fillvalue=fillvalue))
+
+def binaryMatrix(l, value=PAD_token):
+    m = []
+    for i, seq in enumerate(l):
+        m.append([])
+        for token in seq:
+            if token == value:
+                m[i].append(0)
+            else:
+                m[i].append(1)
+    return m
+
+# Returns padded input sequence tensor and lengths
+def inputVar(l, voc):
+    indexes_batch = [indexesFromSentence2(voc, sentence) for sentence in l]
+    lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
+    padList = zeroPadding(indexes_batch)
+    padVar = torch.LongTensor(padList)
+    return padVar, lengths
+
+# Returns padded target sequence tensor, padding mask, and max target length
+def outputVar(l, voc):
+    indexes_batch = [indexesFromSentence2(voc, sentence) for sentence in l]
+    max_target_len = max([len(indexes) for indexes in indexes_batch])
+    padList = zeroPadding(indexes_batch)
+    mask = binaryMatrix(padList)
+    mask = torch.BoolTensor(mask)
+    padVar = torch.LongTensor(padList)
+    return padVar, mask, max_target_len
+
+# Returns all items for a given batch of pairs
+def batch2TrainData(src_voc, tgt_voc, pair_batch):
+    pair_batch.sort(key=lambda x: len(x[0].split(" ")), reverse=True)
+    input_batch, output_batch = [], []
+    for pair in pair_batch:
+        input_batch.append(pair[0])
+        output_batch.append(pair[1])
+    inp, lengths = inputVar(input_batch, src_voc)
+    output, mask, max_target_len = outputVar(output_batch, tgt_voc)
+    return inp, lengths, output, mask, max_target_len
+
+
+def create_batches(pairs, batch_size):
+    random.shuffle(pairs)
+    return batch(pairs, batch_size)
+
+
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
