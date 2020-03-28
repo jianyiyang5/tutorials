@@ -91,8 +91,9 @@ def trainIters(model_name, src_voc, tgt_voc, pairs, encoder, decoder, encoder_op
         for batch in batches:
             input_variable, lengths, target_variable, mask, max_target_len = batch2TrainData(src_voc, tgt_voc, batch)
             # Run a training iteration with batch
+            cur_batch_size = input_variable.size()[1]
             loss, n_total = train(input_variable, lengths, target_variable, mask, max_target_len, encoder,
-                         decoder, encoder_optimizer, decoder_optimizer, batch_size, clip, device)
+                         decoder, encoder_optimizer, decoder_optimizer, cur_batch_size, clip, device)
             total_loss += loss
             n_totals += n_total
 
