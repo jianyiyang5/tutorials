@@ -5,6 +5,13 @@ from torch import nn, optim
 from data import SOS_token, batch2TrainData, create_batches, prepareData
 from model_batch import EncoderRNNBatch, LuongAttnDecoderRNN
 
+# For pytorch 1.1
+# def maskNLLLoss(inp, target, mask, device):
+#     nTotal = (mask == True).sum()
+#     crossEntropy = -torch.log(torch.gather(inp, 1, target.view(-1, 1)).squeeze(1))
+#     loss = crossEntropy.masked_select(mask == True).mean()
+#     loss = loss.to(device)
+#     return loss, nTotal.item()
 
 def maskNLLLoss(inp, target, mask, device):
     nTotal = mask.sum()
@@ -140,7 +147,7 @@ if __name__ == '__main__':
     loadFilename = None
     epochs = 25
 
-    input_lang, output_lang, pairs = prepareData('eng', 'fra', True, '../../data')
+    input_lang, output_lang, pairs = prepareData('eng', 'fra', True, '../data')
 
     encoder = EncoderRNNBatch(hidden_size, nn.Embedding(input_lang.n_words, hidden_size), encoder_n_layers, dropout)
     decoder = LuongAttnDecoderRNN(attn_model, nn.Embedding(output_lang.n_words, hidden_size), hidden_size,
