@@ -99,7 +99,7 @@ def trainIters(model_name, src_voc, tgt_voc, pairs, encoder, decoder, encoder_op
 
         # Print progress
         print_loss_avg = total_loss / n_totals
-        print("Iteration: {}; Percent complete: {:.1f}%; Average loss: {:.4f}".format(iteration, iteration / n_iteration * 100, print_loss_avg))
+        print("Epoch: {}; Percent complete: {:.1f}%; Average loss: {:.4f}".format(iteration, iteration / n_iteration * 100, print_loss_avg))
 
         # Save checkpoint
         directory = os.path.join(save_dir, model_name, corpus_name, '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size))
