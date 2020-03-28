@@ -38,18 +38,19 @@ class TestTrainBatch(unittest.TestCase):
         print(loss)
 
     def test_train_iters(self):
-        batch_size = 32
+        batch_size = 64
         clip = 50
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         learning_rate = 0.0001
         decoder_learning_ratio = 5.0
-        hidden_size = 16
+        hidden_size = 256
         encoder_n_layers = 2
         decoder_n_layers = 2
         dropout = 0.1
         attn_model = 'dot'
         checkpoint = None
         loadFilename = None
+        epochs = 25
 
         input_lang, output_lang, pairs = prepareData('eng', 'fra', True, '../../data')
 
@@ -61,5 +62,5 @@ class TestTrainBatch(unittest.TestCase):
         decoder_optimizer = optim.Adam(decoder.parameters(), lr=learning_rate * decoder_learning_ratio)
 
         trainIters('test_batch', input_lang, output_lang, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer,
-               encoder_n_layers, decoder_n_layers, hidden_size, 'output', 5, batch_size, clip, 'en-fr',
+               encoder_n_layers, decoder_n_layers, hidden_size, 'output', epochs, batch_size, clip, 'en-fr',
                loadFilename, checkpoint, device)

@@ -1,8 +1,9 @@
 import random
 import os
 import torch
-from torch import nn
-from data import SOS_token, batch2TrainData, create_batches
+from torch import nn, optim
+from data import SOS_token, batch2TrainData, create_batches, prepareData
+from model_batch import EncoderRNNBatch, LuongAttnDecoderRNN
 
 
 def maskNLLLoss(inp, target, mask, device):
@@ -15,6 +16,10 @@ def maskNLLLoss(inp, target, mask, device):
 
 def train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
           encoder_optimizer, decoder_optimizer, batch_size, clip, device, teacher_forcing_ratio=1.0):
+    encoder = encoder.to(device)
+    decoder = decoder.to(device)
+    encoder.train()
+    decoder.train()
     # Zero gradients
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
@@ -118,3 +123,32 @@ def trainIters(model_name, src_voc, tgt_voc, pairs, encoder, decoder, encoder_op
             'tgt_embedding': decoder.embedding.state_dict(),
             'attn_model': decoder.attn_model
         }, os.path.join(directory, '{}_{}.tar'.format(iteration, 'checkpoint')))
+
+
+if __name__ == '__main__':
+    batch_size = 64
+    clip = 50
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    learning_rate = 0.0001
+    decoder_learning_ratio = 5.0
+    hidden_size = 256
+    encoder_n_layers = 2
+    decoder_n_layers = 2
+    dropout = 0.1
+    attn_model = 'dot'
+    checkpoint = None
+    loadFilename = None
+    epochs = 25
+
+    input_lang, output_lang, pairs = prepareData('eng', 'fra', True, '../../data')
+
+    encoder = EncoderRNNBatch(hidden_size, nn.Embedding(input_lang.n_words, hidden_size), encoder_n_layers, dropout)
+    decoder = LuongAttnDecoderRNN(attn_model, nn.Embedding(output_lang.n_words, hidden_size), hidden_size,
+                                  output_lang.n_words, decoder_n_layers, dropout)
+
+    encoder_optimizer = optim.Adam(encoder.parameters(), lr=learning_rate)
+    decoder_optimizer = optim.Adam(decoder.parameters(), lr=learning_rate * decoder_learning_ratio)
+
+    trainIters('model_batch', input_lang, output_lang, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer,
+               encoder_n_layers, decoder_n_layers, hidden_size, 'output', epochs, batch_size, clip, 'en-fr',
+               loadFilename, checkpoint, device)
