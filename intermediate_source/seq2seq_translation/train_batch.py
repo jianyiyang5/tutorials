@@ -2,7 +2,7 @@ import random
 import os
 import torch
 from torch import nn, optim
-from data import SOS_token, batch2TrainData, create_batches, prepareData
+from data import SOS_token, batch2TrainData, create_batches, prepareData, Lang
 from model_batch import EncoderRNNBatch, LuongAttnDecoderRNN
 
 # For pytorch 1.1
@@ -125,11 +125,37 @@ def trainIters(model_name, src_voc, tgt_voc, pairs, encoder, decoder, encoder_op
             'de_opt': decoder_optimizer.state_dict(),
             'loss': print_loss_avg,
             'src_voc_dict': src_voc.__dict__,
-            'tgt_voc_dict': src_voc.__dict__,
+            'tgt_voc_dict': tgt_voc.__dict__,
             'src_embedding': encoder.embedding.state_dict(),
             'tgt_embedding': decoder.embedding.state_dict(),
             'attn_model': decoder.attn_model
         }, os.path.join(directory, '{}_{}.tar'.format(iteration, 'checkpoint')))
+
+
+def load_model(save_dir, model_name, corpus_name, encoder_n_layers, decoder_n_layers, hidden_size, dropout):
+    directory = os.path.join(save_dir, model_name, corpus_name,
+                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size))
+    checkpoint = torch.load(f'{directory}/25_checkpoint.tar')
+    # iteration = checkpoint['iteration']
+    attn_model = checkpoint['attn_model']
+
+    src_voc_dict = Lang('')
+    src_voc_dict.__dict__ = checkpoint['src_voc_dict']
+
+    tgt_voc_dict = Lang('')
+    tgt_voc_dict.__dict__ = checkpoint['tgt_voc_dict']
+
+    src_embedding = nn.Embedding(src_voc_dict.n_words, hidden_size)
+    src_embedding.load_state_dict(checkpoint['src_embedding'])
+    encoder = EncoderRNNBatch(hidden_size, src_embedding, n_layers=encoder_n_layers, dropout=dropout)
+    encoder.load_state_dict(checkpoint['en'])
+
+    tgt_embedding = nn.Embedding(tgt_voc_dict.n_words, hidden_size)
+    tgt_embedding.load_state_dict(checkpoint['tgt_embedding'])
+    decoder = LuongAttnDecoderRNN(attn_model, tgt_embedding, hidden_size, tgt_voc_dict.n_words, n_layers=decoder_n_layers, dropout=dropout)
+    decoder.load_state_dict(checkpoint['de'])
+
+    return encoder, decoder, src_voc_dict, tgt_voc_dict
 
 
 if __name__ == '__main__':

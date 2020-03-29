@@ -64,3 +64,11 @@ class TestTrainBatch(unittest.TestCase):
         trainIters('test_batch', input_lang, output_lang, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer,
                encoder_n_layers, decoder_n_layers, hidden_size, 'output', epochs, batch_size, clip, 'en-fr',
                loadFilename, checkpoint, device)
+
+    def test_rewrite_model(self):
+        path = 'output/test_batch/en-fr/2-2_256/25_checkpoint.tar'
+        input_lang, output_lang, pairs = prepareData('eng', 'fra', True, '../../data')
+        checkpoint = torch.load(path)
+        checkpoint['tgt_voc_dict'] = output_lang.__dict__
+        torch.save(checkpoint, path)
+
