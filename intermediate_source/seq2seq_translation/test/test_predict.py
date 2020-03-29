@@ -43,6 +43,8 @@ class TestTrainBatch(unittest.TestCase):
             load_model('output', 'test_batch', 'en-fr', encoder_n_layers, decoder_n_layers, hidden_size, dropout)
         encoder = encoder.to(device)
         decoder = decoder.to(device)
+        encoder.eval()
+        decoder.eval()
         searcher = GreedySearchDecoder(encoder, decoder, device)
 
         decoded_words = evaluate(searcher, device, src_voc_dict, tgt_voc_dict, 'elle porte une belle montre .')
@@ -51,6 +53,6 @@ class TestTrainBatch(unittest.TestCase):
         print(decoded_words)
         decoded_words = evaluate(searcher, device, src_voc_dict, tgt_voc_dict, 'vous etes vraiment tres productive aujourd hui .')
         print(decoded_words)
-        decoded_words = evaluate(searcher, device, src_voc_dict, tgt_voc_dict, 'il adore marcher abc.')
+        decoded_words = evaluate(searcher, device, src_voc_dict, tgt_voc_dict, 'il adore marcher UnseenWord.')
         print(decoded_words)
 

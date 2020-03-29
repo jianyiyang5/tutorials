@@ -1,7 +1,8 @@
 import torch
 from torch import nn
 
-from data import SOS_token, indexesFromSentence2, MAX_LENGTH
+from data import SOS_token, indexesFromSentence2, MAX_LENGTH, normalizeString
+from train_batch import load_model
 
 
 class GreedySearchDecoder(nn.Module):
@@ -52,3 +53,40 @@ def evaluate(searcher, device, src_voc, tgt_voc, sentence, max_length=MAX_LENGTH
     # indexes -> words
     decoded_words = [tgt_voc.index2word[token.item()] for token in tokens]
     return decoded_words
+
+
+def evaluateInput(searcher, device, src_voc, tgt_voc):
+    input_sentence = ''
+    while(1):
+        try:
+            # Get input sentence
+            input_sentence = input('fr< ')
+            # Check if it is quit case
+            if input_sentence == 'q' or input_sentence == 'quit': break
+            # Normalize sentence
+            input_sentence = normalizeString(input_sentence)
+            # Evaluate sentence
+            output_words = evaluate(searcher, device, src_voc, tgt_voc, input_sentence)
+            # Format and print response sentence
+            output_words[:] = [x for x in output_words if not (x == 'EOS' or x == 'PAD' or x == 'UNK' or x == 'SOS')]
+            print('en>', ' '.join(output_words))
+
+        except KeyError:
+            print("Error: Encountered unknown word.")
+
+
+if __name__ == '__main__':
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    hidden_size = 256
+    encoder_n_layers = 2
+    decoder_n_layers = 2
+    dropout = 0.1
+
+    encoder, decoder, src_voc_dict, tgt_voc_dict = \
+        load_model('test/output', 'test_batch', 'en-fr', encoder_n_layers, decoder_n_layers, hidden_size, dropout)
+    encoder = encoder.to(device)
+    decoder = decoder.to(device)
+    encoder.eval()
+    decoder.eval()
+    searcher = GreedySearchDecoder(encoder, decoder, device)
+    evaluateInput(searcher, device, src_voc_dict, tgt_voc_dict)
