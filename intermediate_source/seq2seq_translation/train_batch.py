@@ -171,7 +171,7 @@ if __name__ == '__main__':
     attn_model = 'dot'
     checkpoint = None
     loadFilename = None
-    epochs = 25
+    epochs = 50
 
     input_lang, output_lang, pairs = prepareData('eng', 'fra', True, '../data')
 
