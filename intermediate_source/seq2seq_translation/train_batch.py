@@ -135,7 +135,7 @@ def trainIters(model_name, src_voc, tgt_voc, pairs, encoder, decoder, encoder_op
 def load_model(save_dir, model_name, corpus_name, encoder_n_layers, decoder_n_layers, hidden_size, dropout):
     directory = os.path.join(save_dir, model_name, corpus_name,
                              '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size))
-    checkpoint = torch.load(f'{directory}/25_checkpoint.tar')
+    checkpoint = torch.load(f'{directory}/50_checkpoint.tar')
     # iteration = checkpoint['iteration']
     attn_model = checkpoint['attn_model']
 
