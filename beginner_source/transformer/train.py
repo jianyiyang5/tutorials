@@ -69,6 +69,7 @@ def train(TEXT, train_data, val_data, device):
             best_model = model
 
         scheduler.step()
+    return best_model
 
 
 def evaluate(eval_model, data_source, TEXT, criterion=nn.CrossEntropyLoss()):
@@ -87,4 +88,9 @@ def evaluate(eval_model, data_source, TEXT, criterion=nn.CrossEntropyLoss()):
 if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     TEXT, train_data, val_data, test_data = load_data(device)
-    train(TEXT, train_data, val_data, device)
+    best_model = train(TEXT, train_data, val_data, device)
+    test_loss = evaluate(best_model, test_data, TEXT)
+    print('=' * 89)
+    print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
+        test_loss, math.exp(test_loss)))
+    print('=' * 89)
