@@ -1,7 +1,9 @@
 import unittest
 import math
 import torch
+from torch import nn
 
+from data import *
 from model_transformer import *
 
 class TransformerTestCase(unittest.TestCase):
@@ -28,6 +30,29 @@ class TransformerTestCase(unittest.TestCase):
 
     def test_generate_subsequent_mask(self):
         print(generate_subsequent_mask(3, 5))
+
+    def test_model(self):
+        input_lang, output_lang, pairs = prepareData('eng', 'fra', True, '../../data')
+        src_sentences = [src for src, _ in pairs[0:3]]
+        tgt_sentences = [tgt for _, tgt in pairs[0:3]]
+        src_tensor, src_pad_mask = input_tensor_with_mask(src_sentences, input_lang)
+        tgt_tensor, tgt_pad_mask, _ = outputVar(tgt_sentences, output_lang)
+        mem_pad_mask = src_pad_mask.clone()
+        tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0))
+        src_vocab_size = input_lang.n_words
+        tgt_vocab_size = output_lang.n_words
+        d_model = 8
+        nhead = 2
+        num_encoder_layers = 2
+        num_decoder_layers = 2
+        dim_feedforward = 16
+        max_seq_length = 11
+        pos_dropout = 0
+        trans_dropout = 0
+        model = TransformerMT(src_vocab_size, tgt_vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers,
+                              dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
+        output = model(src_tensor, tgt_tensor, src_pad_mask, tgt_pad_mask, mem_pad_mask, tgt_mask)
+        print(output.size())
 
 
 if __name__ == '__main__':

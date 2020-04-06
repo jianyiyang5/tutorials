@@ -158,6 +158,18 @@ def inputVar(l, voc):
     padVar = torch.LongTensor(padList)
     return padVar, lengths
 
+def input_tensor_with_mask(sentences, voc):
+    indexes_batch = [indexesFromSentence2(voc, sentence) for sentence in sentences]
+    padList = zeroPadding(indexes_batch)
+    mask_matrix = []
+    for pad in padList:
+        mask = [False if idx == PAD_token else True for idx in pad]
+        mask_matrix.append(mask)
+    padVar = torch.LongTensor(padList)
+    mask_tensor = torch.BoolTensor(mask_matrix)
+    return padVar, mask_tensor
+
+
 # Returns padded target sequence tensor, padding mask, and max target length
 def outputVar(l, voc):
     indexes_batch = [indexesFromSentence2(voc, sentence) for sentence in l]
