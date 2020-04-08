@@ -192,6 +192,18 @@ def batch2TrainData(src_voc, tgt_voc, pair_batch):
     return inp, lengths, output, mask, max_target_len
 
 
+def batch_to_transformer_data(src_voc, tgt_voc, pair_batch):
+    pair_batch.sort(key=lambda x: len(x[0].split(" ")), reverse=True)
+    input_batch, output_batch = [], []
+    for pair in pair_batch:
+        input_batch.append(pair[0])
+        output_batch.append(pair[1])
+    src_tensor, src_pad_mask = input_tensor_with_mask(input_batch, src_voc)
+    tgt_tensor, tgt_pad_mask, _ = outputVar(output_batch, tgt_voc)
+    mem_pad_mask = src_pad_mask.clone()
+    return src_tensor, tgt_tensor, src_pad_mask, tgt_pad_mask, mem_pad_mask
+
+
 def create_batches(pairs, batch_size):
     random.shuffle(pairs)
     return batch(pairs, batch_size)

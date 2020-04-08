@@ -67,5 +67,5 @@ class TransformerMT(nn.Module):
         output = self.transformer(src, tgt, tgt_mask=tgt_mask, src_key_padding_mask=src_key_padding_mask,
                                   tgt_key_padding_mask=tgt_key_padding_mask, memory_key_padding_mask=memory_key_padding_mask)
         # output = rearrange(output, 't n e -> n t e')
-        output = output.transpose(0, 1)
+        # output = output.transpose(0, 1)
         return self.fc(output)
