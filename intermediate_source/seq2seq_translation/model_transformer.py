@@ -59,9 +59,12 @@ class TransformerMT(nn.Module):
     def forward(self, src, tgt, src_key_padding_mask, tgt_key_padding_mask, memory_key_padding_mask, tgt_mask):
         # src = rearrange(src, 'n s -> s n')
         # tgt = rearrange(tgt, 'n t -> t n')
-        src_key_padding_mask = src_key_padding_mask.transpose(0, 1)
-        tgt_key_padding_mask = tgt_key_padding_mask.transpose(0, 1)
-        memory_key_padding_mask = memory_key_padding_mask.transpose(0, 1)
+        if src_key_padding_mask is not None:
+            src_key_padding_mask = src_key_padding_mask.transpose(0, 1)
+        if tgt_key_padding_mask is not None:
+            tgt_key_padding_mask = tgt_key_padding_mask.transpose(0, 1)
+        if memory_key_padding_mask is not None:
+            memory_key_padding_mask = memory_key_padding_mask.transpose(0, 1)
         src = self.pos_enc(self.embed_src(src) * math.sqrt(self.d_model))
         tgt = self.pos_enc(self.embed_tgt(tgt) * math.sqrt(self.d_model))
 
