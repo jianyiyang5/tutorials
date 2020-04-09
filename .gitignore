@@ -119,3 +119,4 @@ cleanup.sh
 /src/pytorch-sphinx-theme/
 /intermediate_source/char_rnn_generation/output/
 /intermediate_source/seq2seq_translation/test/output/
+/intermediate_source/seq2seq_translation/output/
