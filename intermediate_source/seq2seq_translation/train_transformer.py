@@ -68,7 +68,7 @@ def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_
     print('------------------------------------------------------------')
 
 
-def train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=64):
+def train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=64, out_path='output/transformer.pt'):
     model = model.to(device)
     model.train()
 
@@ -76,29 +76,65 @@ def train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batc
     print('start training ...')
     for epoch in range(0, max_epochs):
         train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since)
+        save_model(model, optimizer, out_path, epoch)
     print('training completed')
 
 
-if __name__ == '__main__':
-    batch_size = 64
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    learning_rate = 0.0001
-    src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../data')
+def save_model(model, optimizer, out_path, epoch):
+    torch.save({
+        'epoch': epoch,
+        'model_dict': model.state_dict(),
+        'src_vocab_size': src_vocab_size,
+        'tgt_vocab_size': tgt_vocab_size,
+        'optimizer_dict': optimizer.state_dict()
+    }, f'{out_path}.{epoch}')
+    print(f'Model saved to {out_path}.{epoch}')
 
+
+def load_model(model_path):
+    checkpoint = torch.load(model_path)
+    src_vocab_size = checkpoint['src_vocab_size']
+    tgt_vocab_size = checkpoint['tgt_vocab_size']
+    model = create_model(src_vocab_size, tgt_vocab_size)
+    model.load_state_dict(checkpoint['model_dict'])
+    optimizer = create_optimizer(model)
+    optimizer.load_state_dict(checkpoint['optimizer_dict'])
+    print(f'Load model from {model_path}')
+    return model, optimizer
+
+
+def create_model(src_vocab_size, tgt_vocab_size, d_model=256, nhead=4, num_encoder_layers=3, num_decoder_layers=3,
+                 dim_feedforward=1024, max_seq_length=30, pos_dropout=0.1, trans_dropout=0.1):
+    return TransformerMT(src_vocab_size, tgt_vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers,
+                         dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
+
+
+def create_optimizer(model):
+    return optim.Adam(model.parameters(), lr=0.0001)
+
+
+if __name__ == '__main__':
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../data')
     src_vocab_size = src_voc.n_words
     tgt_vocab_size = tgt_voc.n_words
 
-    model_size_factor = 2
-    d_model = int(512/model_size_factor)
-    nhead = int(8/model_size_factor)
-    num_encoder_layers = int(6/model_size_factor)
-    num_decoder_layers = int(6/model_size_factor)
-    dim_feedforward = int(2048/model_size_factor)
-    max_seq_length = 30
-    pos_dropout = 0.1
-    trans_dropout = 0.1
-    model = TransformerMT(src_vocab_size, tgt_vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers,
-                          dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=batch_size)
+    # model_size_factor = 2
+    # d_model = int(512/model_size_factor)
+    # nhead = int(8/model_size_factor)
+    # num_encoder_layers = int(6/model_size_factor)
+    # num_decoder_layers = int(6/model_size_factor)
+    # dim_feedforward = int(2048/model_size_factor)
+    # max_seq_length = 30
+    # pos_dropout = 0.1
+    # trans_dropout = 0.1
+    # model = TransformerMT(src_vocab_size, tgt_vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers,
+    #                       dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
+
+    out_path = 'output/transformer.pt'
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    model = create_model(src_vocab_size, tgt_vocab_size)
+    # optimizer = optim.Adam(model.parameters(), lr=
+    optimizer = create_optimizer(model)
+    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=10, batch_size=64, out_path=out_path)
 
