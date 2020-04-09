@@ -34,12 +34,14 @@ def predict(src_voc, tgt_voc, src_sentences, model, device):
             tgt_pad_mask = tgt_pad_mask.to(device)
             mem_pad_mask = mem_pad_mask.to(device)
             tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0)).to(device)
-            outputs = model.forward(src_tensor, tgt_tensor, src_key_padding_mask=src_pad_mask,
+            outputs = model.forward(src_tensor, tgt_tensor, src_key_padding_mask=None,
                                     tgt_key_padding_mask=None, memory_key_padding_mask=None,
                                     tgt_mask=tgt_mask)
             break
         print(outputs)
-        print(torch.topk(outputs.squeeze(0), 1))
+        print(torch.topk(outputs.squeeze(0), 3))
+        print(tgt_voc.index2word[1034])
+        print(tgt_voc.index2word[2059])
 
 
 if __name__ == '__main__':
