@@ -65,6 +65,7 @@ def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_
         if i % 10 == 0:
             print(f'Batch: {i}; Mean Loss: {mean_loss}; tokens: {n_tokens}')
     print(f'Epoch: {epoch}; Average loss: {total_loss/total_tokens}; Wall time: {timeSince(since)}')
+    print('------------------------------------------------------------')
 
 
 def train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=64):
