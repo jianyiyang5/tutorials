@@ -69,5 +69,5 @@ class TransformerMT(nn.Module):
                                   tgt_key_padding_mask=tgt_key_padding_mask, memory_key_padding_mask=memory_key_padding_mask)
         # output = rearrange(output, 't n e -> n t e')
         # output = output.transpose(0, 1)
-        output = F.softmax(output, dim=2)
-        return self.fc(output)
+        output = self.fc(output)
+        return F.softmax(output, dim=2)

@@ -10,7 +10,7 @@ from model_transformer import TransformerMT, generate_square_subsequent_mask
 # For pytorch 1.1
 # def maskNLLLoss(inp, target, mask, device):
 #     nTotal = (mask == True).sum()
-#     crossEntropy = -torch.log(torch.gather(inp, 1, target.view(-1, 1)).squeeze(1))
+#     crossEntropy = -torch.log(torch.gather(inp, 2, target.unsqueeze(2)).squeeze(2))
 #     loss = crossEntropy.masked_select(mask == True).mean()
 #     loss = loss.to(device)
 #     return loss, nTotal.item()
@@ -55,11 +55,15 @@ def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_
     batches = create_batches(pairs, batch_size)
     total_loss = 0
     total_tokens = 0
+
+    i = 0
     for batch in batches:
+        i += 1
         mean_loss, n_tokens = train_batch(batch, model, optimizer, device, src_voc, tgt_voc)
         total_loss += mean_loss * n_tokens
         total_tokens += n_tokens
-        # print(mean_loss, n_tokens)
+        if i % 10 == 0:
+            print(f'Batch: {i}; Mean Loss: {mean_loss}; tokens: {n_tokens}')
     print(f'Epoch: {epoch}; Average loss: {total_loss/total_tokens}; Wall time: {timeSince(since)}')
 
 

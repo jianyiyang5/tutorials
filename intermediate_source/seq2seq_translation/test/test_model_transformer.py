@@ -1,4 +1,5 @@
 import unittest
+import time
 import math
 import torch
 from torch import nn
@@ -93,7 +94,7 @@ class TransformerTestCase(unittest.TestCase):
         model = TransformerMT(src_vocab_size, tgt_vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers,
                               dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
         optimizer = optim.Adam(model.parameters())
-        train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, 0, batch_size)
+        train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, 0, batch_size, time.time())
 
 
 if __name__ == '__main__':
