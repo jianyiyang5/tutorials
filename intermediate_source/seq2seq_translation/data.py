@@ -158,12 +158,12 @@ def inputVar(l, voc):
     padVar = torch.LongTensor(padList)
     return padVar, lengths
 
-def input_tensor_with_mask(sentences, voc):
+def tensor_with_mask(sentences, voc):
     indexes_batch = [indexesFromSentence2(voc, sentence) for sentence in sentences]
     padList = zeroPadding(indexes_batch)
     mask_matrix = []
     for pad in padList:
-        mask = [False if idx == PAD_token else True for idx in pad]
+        mask = [True if idx == PAD_token else False for idx in pad]
         mask_matrix.append(mask)
     padVar = torch.LongTensor(padList)
     mask_tensor = torch.BoolTensor(mask_matrix)
@@ -198,8 +198,8 @@ def batch_to_transformer_data(src_voc, tgt_voc, pair_batch):
     for pair in pair_batch:
         input_batch.append(pair[0])
         output_batch.append(pair[1])
-    src_tensor, src_pad_mask = input_tensor_with_mask(input_batch, src_voc)
-    tgt_tensor, tgt_pad_mask, _ = outputVar(output_batch, tgt_voc)
+    src_tensor, src_pad_mask = tensor_with_mask(input_batch, src_voc)
+    tgt_tensor, tgt_pad_mask = tensor_with_mask(output_batch, tgt_voc)
     mem_pad_mask = src_pad_mask.clone()
     return src_tensor, tgt_tensor, src_pad_mask, tgt_pad_mask, mem_pad_mask
 

@@ -31,7 +31,7 @@ class TestData(unittest.TestCase):
         input_lang, output_lang, pairs = prepareData('eng', 'fra', True, '../../data')
         src_sentences = [src for src, _ in pairs[0:3]]
         print(src_sentences)
-        print(input_tensor_with_mask(src_sentences, input_lang))
+        print(tensor_with_mask(src_sentences, input_lang))
         # row batch, col sequence
         expected = [[ 4,  8, 11],
         [ 5,  9, 12],
@@ -43,7 +43,7 @@ class TestData(unittest.TestCase):
         [ True,  True,  True],
         [ True,  True,  True],
         [ True,  True, False]]
-        input_tensor, mask = input_tensor_with_mask(src_sentences, input_lang)
+        input_tensor, mask = tensor_with_mask(src_sentences, input_lang)
         self.assertTrue(torch.equal(torch.LongTensor(expected), input_tensor))
         self.assertTrue(torch.equal(torch.BoolTensor(expected_mask), mask))
 

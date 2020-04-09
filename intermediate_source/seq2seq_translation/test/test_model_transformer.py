@@ -37,8 +37,8 @@ class TransformerTestCase(unittest.TestCase):
         input_lang, output_lang, pairs = prepareData('eng', 'fra', True, '../../data')
         src_sentences = [src for src, _ in pairs[0:3]]
         tgt_sentences = [tgt for _, tgt in pairs[0:3]]
-        src_tensor, src_pad_mask = input_tensor_with_mask(src_sentences, input_lang)
-        tgt_tensor, tgt_pad_mask, _ = outputVar(tgt_sentences, output_lang)
+        src_tensor, src_pad_mask = tensor_with_mask(src_sentences, input_lang)
+        tgt_tensor, tgt_pad_mask = tensor_with_mask(tgt_sentences, output_lang)
         mem_pad_mask = src_pad_mask.clone()
         tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0))
         src_vocab_size = input_lang.n_words
