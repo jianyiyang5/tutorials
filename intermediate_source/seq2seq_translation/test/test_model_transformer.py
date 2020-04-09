@@ -6,7 +6,7 @@ from torch import optim
 
 from data import *
 from model_transformer import *
-from train_transformer import train_batch
+from train_transformer import train_batch, train_epoch
 
 class TransformerTestCase(unittest.TestCase):
     def testPositionalEncoding(self):
@@ -75,6 +75,26 @@ class TransformerTestCase(unittest.TestCase):
         optimizer = optim.Adam(model.parameters())
         mean_loss, n_tokens = train_batch(pairs[0:3], model, optimizer, device, src_voc, tgt_voc)
         print(mean_loss, n_tokens)
+
+    def test_epoch(self):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../../data')
+        src_vocab_size = src_voc.n_words
+        tgt_vocab_size = tgt_voc.n_words
+        d_model = 8
+        nhead = 2
+        num_encoder_layers = 2
+        num_decoder_layers = 2
+        dim_feedforward = 16
+        max_seq_length = 11
+        pos_dropout = 0
+        trans_dropout = 0
+        batch_size = 64
+        model = TransformerMT(src_vocab_size, tgt_vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers,
+                              dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
+        optimizer = optim.Adam(model.parameters())
+        train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, 0, batch_size)
+
 
 if __name__ == '__main__':
     unittest.main()

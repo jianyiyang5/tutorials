@@ -1,5 +1,7 @@
 import random
 import os
+import time
+import math
 import torch
 from torch import nn, optim
 from data import SOS_token, batch_to_transformer_data, create_batches, prepareData, Lang
@@ -13,6 +15,7 @@ from model_transformer import TransformerMT, generate_square_subsequent_mask
 #     loss = loss.to(device)
 #     return loss, nTotal.item()
 
+
 def maskNLLLoss(inp, target, mask, device):
     nTotal = mask.sum()
     # inp = inp.transpose(0, 1)
@@ -20,6 +23,14 @@ def maskNLLLoss(inp, target, mask, device):
     loss = crossEntropy.masked_select(mask).mean()
     loss = loss.to(device)
     return loss, nTotal.item()
+
+
+def timeSince(since):
+    now = time.time()
+    s = now - since
+    m = math.floor(s / 60)
+    s -= m * 60
+    return '%dm %ds' % (m, s)
 
 
 def train_batch(batch, model, optimizer, device, src_voc, tgt_voc):
@@ -40,6 +51,29 @@ def train_batch(batch, model, optimizer, device, src_voc, tgt_voc):
     return mean_loss, n_tokens
 
 
+def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since):
+    batches = create_batches(pairs, batch_size)
+    total_loss = 0
+    total_tokens = 0
+    for batch in batches:
+        mean_loss, n_tokens = train_batch(batch, model, optimizer, device, src_voc, tgt_voc)
+        total_loss += mean_loss * n_tokens
+        total_tokens += n_tokens
+        # print(mean_loss, n_tokens)
+    print(f'Epoch: {epoch}; Average loss: {total_loss/total_tokens}; Wall time: {timeSince(since)}')
+
+
+def train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=64):
+    model = model.to(device)
+    model.train()
+
+    since = time.time()
+    print('start training ...')
+    for epoch in range(0, max_epochs):
+        train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since)
+    print('training completed')
+
+
 if __name__ == '__main__':
     batch_size = 64
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -50,15 +84,16 @@ if __name__ == '__main__':
     tgt_vocab_size = tgt_voc.n_words
 
     model_size_factor = 2
-    d_model = 512/model_size_factor
-    nhead = 8/model_size_factor
-    num_encoder_layers = 6/model_size_factor
-    num_decoder_layers = 6/model_size_factor
-    dim_feedforward = 2048/model_size_factor
+    d_model = int(512/model_size_factor)
+    nhead = int(8/model_size_factor)
+    num_encoder_layers = int(6/model_size_factor)
+    num_decoder_layers = int(6/model_size_factor)
+    dim_feedforward = int(2048/model_size_factor)
     max_seq_length = 30
     pos_dropout = 0.1
     trans_dropout = 0.1
     model = TransformerMT(src_vocab_size, tgt_vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers,
                           dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=batch_size)
 

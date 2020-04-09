@@ -1,6 +1,7 @@
 import math
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 ######################################################################
 # ``PositionalEncoding`` module injects some information about the
@@ -68,4 +69,5 @@ class TransformerMT(nn.Module):
                                   tgt_key_padding_mask=tgt_key_padding_mask, memory_key_padding_mask=memory_key_padding_mask)
         # output = rearrange(output, 't n e -> n t e')
         # output = output.transpose(0, 1)
+        output = F.softmax(output, dim=2)
         return self.fc(output)
