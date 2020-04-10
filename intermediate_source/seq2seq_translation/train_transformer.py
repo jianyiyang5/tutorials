@@ -33,10 +33,12 @@ def train_batch(batch, model, optimizer, device, src_voc, tgt_voc):
     src_pad_mask = src_pad_mask.to(device)
     tgt_pad_mask = tgt_pad_mask.to(device)
     mem_pad_mask = mem_pad_mask.to(device)
-    tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0)).to(device)
 
-    output = model(src_tensor, tgt_tensor, src_pad_mask, tgt_pad_mask, mem_pad_mask, tgt_mask)
-    mean_loss, n_tokens = maskNLLLoss(output, tgt_tensor, tgt_pad_mask, device)
+    tgt_inp, tgt_out = tgt_tensor[:-1, :], tgt_tensor[1:, :]
+    tgt_mask = generate_square_subsequent_mask(tgt_inp.size(0)).to(device)
+
+    output = model(src_tensor, tgt_inp, src_pad_mask, tgt_pad_mask[:-1, :], mem_pad_mask, tgt_mask)
+    mean_loss, n_tokens = maskNLLLoss(output, tgt_out, tgt_pad_mask[1:, :], device)
     mean_loss.backward()
     optimizer.step()
 
@@ -59,8 +61,8 @@ def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_
             for j in range(output.size(0)):
                 _, indices = torch.topk(output[j][0], 1)
                 predicted.append(tgt_voc.index2word[indices[0].item()])
-            print(f'Batch: {i}; Mean Loss: {mean_loss}; tokens: {n_tokens}')
-    print(f'Epoch: {epoch}; Average loss: {total_loss/total_tokens}; Wall time: {timeSince(since)}; Predicted: f{" ".join(predicted)}')
+            print(f'Batch: {i}; Mean Loss: {mean_loss}; tokens: {n_tokens}; Predicted: {" ".join(predicted)}')
+    print(f'Epoch: {epoch}; Average loss: {total_loss/total_tokens}; Wall time: {timeSince(since)}')
     print('------------------------------------------------------------')
 
 
