@@ -97,7 +97,7 @@ class TransformerTestCase(unittest.TestCase):
         train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, 0, batch_size, time.time())
 
     def test_predict(self):
-        model, _ = load_model('../output/transformer.pt.5')
+        model, _ = load_model('../output/transformer.pt.9')
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../../data')
         batches = create_batches(pairs, 3)
