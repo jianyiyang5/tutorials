@@ -101,8 +101,8 @@ def load_model(model_path):
     return model, optimizer
 
 
-def create_model(src_vocab_size, tgt_vocab_size, d_model=256, nhead=4, num_encoder_layers=3, num_decoder_layers=3,
-                 dim_feedforward=1024, max_seq_length=30, pos_dropout=0.1, trans_dropout=0.1):
+def create_model(src_vocab_size, tgt_vocab_size, d_model=512, nhead=8, num_encoder_layers=6, num_decoder_layers=6,
+                 dim_feedforward=2048, max_seq_length=30, pos_dropout=0.1, trans_dropout=0.1):
     return TransformerMT(src_vocab_size, tgt_vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers,
                          dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
 

@@ -8,7 +8,7 @@ PAD_token = 0  # Used for padding short sentences
 SOS_token = 1  # Start-of-sentence token
 EOS_token = 2  # End-of-sentence token
 UNK_token = 3
-MAX_LENGTH = 10
+MAX_LENGTH = 200
 
 eng_prefixes = (
     "i am ", "i m ",
@@ -102,7 +102,7 @@ def filterPairs(pairs):
 def prepareData(lang1, lang2, reverse=False, data_dir='../data'):
     input_lang, output_lang, pairs = readLangs(lang1, lang2, reverse, data_dir)
     print("Read %s sentence pairs" % len(pairs))
-    pairs = filterPairs(pairs)
+    # pairs = filterPairs(pairs)
     print("Trimmed to %s sentence pairs" % len(pairs))
     print("Counting words...")
     for pair in pairs:
