@@ -19,7 +19,6 @@ def target_tensor(tgt_sentences, tgt_voc):
 
 
 def predict(src_voc, tgt_voc, src_sentences, model, device):
-    print(src_sentences)
     with torch.no_grad():
         model = model.to(device)
         model.eval()
@@ -34,17 +33,16 @@ def predict(src_voc, tgt_voc, src_sentences, model, device):
             # tgt_pad_mask = tgt_pad_mask.to(device)
             mem_pad_mask = mem_pad_mask.to(device)
             tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0)).to(device)
-            outputs = model(src_tensor, tgt_tensor, src_key_padding_mask=src_pad_mask,
-                                    tgt_key_padding_mask=None, memory_key_padding_mask=mem_pad_mask,
+            outputs = model(src_tensor, tgt_tensor, src_key_padding_mask=None,
+                                    tgt_key_padding_mask=None, memory_key_padding_mask=None,
                                     tgt_mask=tgt_mask)
             for i in range(outputs.size(1)):
                 _, indices = torch.topk(outputs[-1][i], 5)
                 tgt_sentences[i] = tgt_sentences[i] + ' ' + tgt_voc.index2word[indices[0].item()]
-        print(tgt_sentences)
+    return tgt_sentences
 
 
 def evaluate(src_voc, tgt_voc, pairs, model, device):
-    # print(pairs)
     with torch.no_grad():
         model = model.to(device)
         model.eval()
@@ -68,18 +66,19 @@ def evaluate(src_voc, tgt_voc, pairs, model, device):
                 predicted.append(tgt_voc.index2word[indices[0].item()])
             predicted_list.append(' '.join(predicted))
 
-        print(predicted_list)
+    return predicted_list
 
 
 if __name__ == '__main__':
     model, _ = load_model('output/transformer.pt.9')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../data')
-    # src_sentences = [src for src, _ in pairs[0:8]]
-    tgt_sentences = [tgt for _, tgt in pairs[0:8]]
-    # predict(src_voc, tgt_voc, src_sentences, model, device)
-    # print(tgt_sentences)
-    print(tgt_sentences)
-    evaluate(src_voc, tgt_voc, pairs[:8], model, device)
+    src_sentences = [src for src, _ in pairs[100000:100008]]
+    tgt_sentences = [tgt for _, tgt in pairs[100000:100008]]
+    predicted = predict(src_voc, tgt_voc, src_sentences, model, device)
+    for sents in zip(predicted, tgt_sentences):
+        print(f'hyp: {sents[0]}')
+        print(f'ref: {sents[1]}\n')
+    # evaluate(src_voc, tgt_voc, pairs[:8], model, device)
 
 
