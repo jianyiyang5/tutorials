@@ -108,9 +108,9 @@ class TransformerTestCase(unittest.TestCase):
         src_pad_mask = src_pad_mask.to(device)
         tgt_pad_mask = tgt_pad_mask.to(device)
         mem_pad_mask = mem_pad_mask.to(device)
-        tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0)).to(device)
-        outputs = model.forward(src_tensor, tgt_tensor, src_key_padding_mask=src_pad_mask,
-                                tgt_key_padding_mask=tgt_pad_mask, memory_key_padding_mask=mem_pad_mask,
+        tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0)-1).to(device)
+        outputs = model.forward(src_tensor, tgt_tensor[:-1, :], src_key_padding_mask=src_pad_mask,
+                                tgt_key_padding_mask=tgt_pad_mask[:-1, :], memory_key_padding_mask=mem_pad_mask,
                                 tgt_mask=tgt_mask)
         print(outputs.size())
         print(batch)

@@ -1,7 +1,7 @@
 import torch
 from model_transformer import TransformerMT, generate_square_subsequent_mask
 from train_transformer import load_model
-from data import MAX_LENGTH, prepareData, tensor_with_mask, UNK_token, zeroPadding, PAD_token
+from data import MAX_LENGTH, prepareData, tensor_with_mask, UNK_token, zeroPadding, PAD_token, batch_to_transformer_data
 
 
 def target_tensor(tgt_sentences, tgt_voc):
@@ -31,11 +31,11 @@ def predict(src_voc, tgt_voc, src_sentences, model, device):
             src_tensor = src_tensor.to(device)
             tgt_tensor = tgt_tensor.to(device)
             src_pad_mask = src_pad_mask.to(device)
-            tgt_pad_mask = tgt_pad_mask.to(device)
+            # tgt_pad_mask = tgt_pad_mask.to(device)
             mem_pad_mask = mem_pad_mask.to(device)
             tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0)).to(device)
-            outputs = model(src_tensor, tgt_tensor, src_key_padding_mask=None,
-                                    tgt_key_padding_mask=None, memory_key_padding_mask=None,
+            outputs = model(src_tensor, tgt_tensor, src_key_padding_mask=src_pad_mask,
+                                    tgt_key_padding_mask=None, memory_key_padding_mask=mem_pad_mask,
                                     tgt_mask=tgt_mask)
             for i in range(outputs.size(1)):
                 _, indices = torch.topk(outputs[-1][i], 5)
@@ -43,13 +43,43 @@ def predict(src_voc, tgt_voc, src_sentences, model, device):
         print(tgt_sentences)
 
 
+def evaluate(src_voc, tgt_voc, pairs, model, device):
+    # print(pairs)
+    with torch.no_grad():
+        model = model.to(device)
+        model.eval()
+        src_tensor, tgt_tensor, src_pad_mask, tgt_pad_mask, mem_pad_mask = \
+            batch_to_transformer_data(src_voc, tgt_voc, pairs)
+        src_tensor = src_tensor.to(device)
+        tgt_tensor = tgt_tensor.to(device)
+        src_pad_mask = src_pad_mask.to(device)
+        tgt_pad_mask = tgt_pad_mask.to(device)
+        mem_pad_mask = mem_pad_mask.to(device)
+        tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0) - 1).to(device)
+        outputs = model(src_tensor, tgt_tensor[:-1, :], src_key_padding_mask=src_pad_mask,
+                        tgt_key_padding_mask=tgt_pad_mask[:-1, :], memory_key_padding_mask=mem_pad_mask,
+                        tgt_mask=tgt_mask)
+        predicted_list = []
+        for i in range(outputs.size(1)):
+            output = outputs[:, i, :]
+            predicted = []
+            for j in range(output.size(0)):
+                _, indices = torch.topk(output[j], 1)
+                predicted.append(tgt_voc.index2word[indices[0].item()])
+            predicted_list.append(' '.join(predicted))
+
+        print(predicted_list)
+
+
 if __name__ == '__main__':
     model, _ = load_model('output/transformer.pt.9')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../data')
-    src_sentences = [src for src, _ in pairs[0:8]]
+    # src_sentences = [src for src, _ in pairs[0:8]]
     tgt_sentences = [tgt for _, tgt in pairs[0:8]]
-    predict(src_voc, tgt_voc, src_sentences, model, device)
+    # predict(src_voc, tgt_voc, src_sentences, model, device)
+    # print(tgt_sentences)
     print(tgt_sentences)
+    evaluate(src_voc, tgt_voc, pairs[:8], model, device)
 
 
