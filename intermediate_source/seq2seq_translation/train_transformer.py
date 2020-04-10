@@ -7,20 +7,12 @@ from torch import nn, optim
 from data import SOS_token, batch_to_transformer_data, create_batches, prepareData, Lang
 from model_transformer import TransformerMT, generate_square_subsequent_mask
 
-# For pytorch 1.1
-# def maskNLLLoss(inp, target, mask, device):
-#     nTotal = (mask == True).sum()
-#     crossEntropy = -torch.log(torch.gather(inp, 2, target.unsqueeze(2)).squeeze(2))
-#     loss = crossEntropy.masked_select(mask == True).mean()
-#     loss = loss.to(device)
-#     return loss, nTotal.item()
-
 
 def maskNLLLoss(inp, target, mask, device):
-    nTotal = mask.sum()
+    nTotal = (mask == False).sum()
     # inp = inp.transpose(0, 1)
     crossEntropy = -torch.log(torch.gather(inp, 2, target.unsqueeze(2)).squeeze(2))
-    loss = crossEntropy.masked_select(mask).mean()
+    loss = crossEntropy.masked_select(mask == False).mean()
     loss = loss.to(device)
     return loss, nTotal.item()
 
@@ -48,7 +40,7 @@ def train_batch(batch, model, optimizer, device, src_voc, tgt_voc):
     mean_loss.backward()
     optimizer.step()
 
-    return mean_loss, n_tokens
+    return mean_loss, n_tokens, output
 
 
 def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since):
@@ -59,12 +51,16 @@ def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_
     i = 0
     for batch in batches:
         i += 1
-        mean_loss, n_tokens = train_batch(batch, model, optimizer, device, src_voc, tgt_voc)
+        mean_loss, n_tokens, output = train_batch(batch, model, optimizer, device, src_voc, tgt_voc)
         total_loss += mean_loss * n_tokens
         total_tokens += n_tokens
         if i % 10 == 0:
+            predicted = []
+            for j in range(output.size(0)):
+                _, indices = torch.topk(output[j][0], 1)
+                predicted.append(tgt_voc.index2word[indices[0].item()])
             print(f'Batch: {i}; Mean Loss: {mean_loss}; tokens: {n_tokens}')
-    print(f'Epoch: {epoch}; Average loss: {total_loss/total_tokens}; Wall time: {timeSince(since)}')
+    print(f'Epoch: {epoch}; Average loss: {total_loss/total_tokens}; Wall time: {timeSince(since)}; Predicted: f{" ".join(predicted)}')
     print('------------------------------------------------------------')
 
 
@@ -136,5 +132,5 @@ if __name__ == '__main__':
     model = create_model(src_vocab_size, tgt_vocab_size)
     # optimizer = optim.Adam(model.parameters(), lr=
     optimizer = create_optimizer(model)
-    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=64, out_path=out_path)
+    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=10, batch_size=64, out_path=out_path)
 

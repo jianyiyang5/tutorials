@@ -7,7 +7,7 @@ from torch import optim
 
 from data import *
 from model_transformer import *
-from train_transformer import train_batch, train_epoch
+from train_transformer import train_batch, train_epoch, load_model
 
 class TransformerTestCase(unittest.TestCase):
     def testPositionalEncoding(self):
@@ -95,6 +95,29 @@ class TransformerTestCase(unittest.TestCase):
                               dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
         optimizer = optim.Adam(model.parameters())
         train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, 0, batch_size, time.time())
+
+    def test_predict(self):
+        model, _ = load_model('../output/transformer.pt.5')
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../../data')
+        batches = create_batches(pairs, 3)
+        batch = next(batches)
+        src_tensor, tgt_tensor, src_pad_mask, tgt_pad_mask, mem_pad_mask = batch_to_transformer_data(src_voc, tgt_voc, batch)
+        src_tensor = src_tensor.to(device)
+        tgt_tensor = tgt_tensor.to(device)
+        src_pad_mask = src_pad_mask.to(device)
+        tgt_pad_mask = tgt_pad_mask.to(device)
+        mem_pad_mask = mem_pad_mask.to(device)
+        tgt_mask = generate_square_subsequent_mask(tgt_tensor.size(0)).to(device)
+        outputs = model.forward(src_tensor, tgt_tensor, src_key_padding_mask=src_pad_mask,
+                                tgt_key_padding_mask=tgt_pad_mask, memory_key_padding_mask=mem_pad_mask,
+                                tgt_mask=tgt_mask)
+        print(outputs.size())
+        print(batch)
+        for i in range(outputs.size(0)):
+            _, indices = torch.topk(outputs[i][0], 1)
+            print(tgt_voc.index2word[indices[0].item()])
+
 
 
 if __name__ == '__main__':
