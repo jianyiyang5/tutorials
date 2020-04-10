@@ -44,10 +44,12 @@ def predict(src_voc, tgt_voc, src_sentences, model, device):
 
 
 if __name__ == '__main__':
-    model, _ = load_model('output/transformer.pt.1')
+    model, _ = load_model('output/transformer.pt.3')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../data')
     src_sentences = [src for src, _ in pairs[0:8]]
+    tgt_sentences = [tgt for _, tgt in pairs[0:8]]
     predict(src_voc, tgt_voc, src_sentences, model, device)
+    print(tgt_sentences)
 
 
