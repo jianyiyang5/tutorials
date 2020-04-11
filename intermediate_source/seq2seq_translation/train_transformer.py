@@ -134,5 +134,5 @@ if __name__ == '__main__':
     model = create_model(src_vocab_size, tgt_vocab_size)
     # optimizer = optim.Adam(model.parameters(), lr=
     optimizer = create_optimizer(model)
-    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=8, out_path=out_path)
+    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=128, out_path=out_path)
 
