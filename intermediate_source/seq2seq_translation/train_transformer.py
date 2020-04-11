@@ -4,7 +4,7 @@ import time
 import math
 import torch
 from torch import nn, optim
-from data import SOS_token, batch_to_transformer_data, create_batches, prepareData, Lang, MAX_LENGTH
+from data import SOS_token, batch_to_transformer_data, create_batches2, prepareData, Lang, MAX_LENGTH
 from model_transformer import TransformerMT, generate_square_subsequent_mask
 
 
@@ -46,7 +46,7 @@ def train_batch(batch, model, optimizer, device, src_voc, tgt_voc):
 
 
 def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since):
-    batches = create_batches(pairs, batch_size)
+    batches = create_batches2(pairs, batch_size)
     total_loss = 0
     total_tokens = 0
 
@@ -134,5 +134,5 @@ if __name__ == '__main__':
     model = create_model(src_vocab_size, tgt_vocab_size)
     # optimizer = optim.Adam(model.parameters(), lr=
     optimizer = create_optimizer(model)
-    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=128, out_path=out_path)
+    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=8, out_path=out_path)
 

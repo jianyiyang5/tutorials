@@ -206,6 +206,17 @@ def batch_to_transformer_data(src_voc, tgt_voc, pair_batch):
     mem_pad_mask = src_pad_mask.clone()
     return src_tensor, tgt_tensor, src_pad_mask, tgt_pad_mask, mem_pad_mask
 
+def create_batches2(pairs, batch_size):
+    pairs.sort(key=lambda x: len(x[0].split(" ")), reverse=True)
+    total_size = len(pairs)
+    n_batches = int(total_size/batch_size)
+    indexes = [i for i in range(n_batches)]
+    random.shuffle(indexes)
+    return batch2(pairs, indexes, batch_size)
+
+def batch2(pairs, indexes, batch_size):
+    for idx in indexes:
+        yield pairs[idx*batch_size : (idx+1)*batch_size]
 
 def create_batches(pairs, batch_size):
     random.shuffle(pairs)
