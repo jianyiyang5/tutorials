@@ -89,8 +89,8 @@ def save_model(model, optimizer, out_path, epoch):
     print(f'Model saved to {out_path}.{epoch}')
 
 
-def load_model(model_path):
-    checkpoint = torch.load(model_path)
+def load_model(model_path, map_location=torch.device('cpu')):
+    checkpoint = torch.load(model_path, map_location=map_location)
     src_vocab_size = checkpoint['src_vocab_size']
     tgt_vocab_size = checkpoint['tgt_vocab_size']
     model = create_model(src_vocab_size, tgt_vocab_size)
