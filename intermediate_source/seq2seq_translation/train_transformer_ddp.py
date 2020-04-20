@@ -93,11 +93,11 @@ def train(rank, src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25
     for epoch in range(0, max_epochs):
         train_epoch(rank, src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since)
         if rank == 0:
-            save_model(model, optimizer, out_path, epoch)
+            save_model(model, optimizer, out_path, epoch, src_voc.n_words, tgt_voc.n_words)
     print('training completed')
 
 
-def save_model(model, optimizer, out_path, epoch):
+def save_model(model, optimizer, out_path, epoch, src_vocab_size, tgt_vocab_size):
     torch.save({
         'epoch': epoch,
         'model_dict': model.state_dict(),
