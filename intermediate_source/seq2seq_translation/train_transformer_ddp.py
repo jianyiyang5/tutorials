@@ -80,8 +80,9 @@ def train_epoch(rank, src_voc, tgt_voc, pairs, model, optimizer, device, epoch, 
                 _, indices = torch.topk(output[j][0], 1)
                 predicted.append(tgt_voc.index2word[indices[0].item()])
             print(f'Batch: {i}; Mean Loss: {mean_loss}; tokens: {n_tokens}; Predicted: {" ".join(predicted)}')
-    print(f'Epoch: {epoch}; Average loss: {total_loss/total_tokens}; Wall time: {timeSince(since)}')
-    print('------------------------------------------------------------')
+    if rank == 0:
+        print(f'Epoch: {epoch}; Average loss: {total_loss/total_tokens}; Wall time: {timeSince(since)}')
+        print('------------------------------------------------------------')
 
 
 def train(rank, src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=64, out_path='output/transformer.pt'):
