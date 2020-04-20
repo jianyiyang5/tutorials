@@ -5,6 +5,8 @@ import math
 import torch
 from torch import nn, optim
 import torch.distributed as dist
+import torch.multiprocessing as mp
+
 
 from data import SOS_token, batch_to_transformer_data, create_batches2, prepareData, Lang, MAX_LENGTH
 from model_transformer import TransformerMT, generate_square_subsequent_mask
@@ -28,7 +30,7 @@ def maskNLLLoss(inp, target, mask, device):
     nTotal = (mask == False).sum()
     # inp = inp.transpose(0, 1)
     crossEntropy = -torch.log(torch.gather(inp, 2, target.unsqueeze(2)).squeeze(2))
-    loss = crossEntropy.masked_select(mask == False).mean()
+    loss = crossEntropy.masked_select(mask is False).mean()
     loss = loss.to(device)
     return loss, nTotal.item()
 
@@ -61,7 +63,7 @@ def train_batch(batch, model, optimizer, device, src_voc, tgt_voc):
     return mean_loss, n_tokens, output
 
 
-def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since):
+def train_epoch(rank, src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since):
     batches = create_batches2(pairs, batch_size)
     total_loss = 0
     total_tokens = 0
@@ -72,7 +74,7 @@ def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_
         mean_loss, n_tokens, output = train_batch(batch, model, optimizer, device, src_voc, tgt_voc)
         total_loss += mean_loss * n_tokens
         total_tokens += n_tokens
-        if i % 10 == 0:
+        if i % 10 == 0 and rank == 0:
             predicted = []
             for j in range(output.size(0)):
                 _, indices = torch.topk(output[j][0], 1)
@@ -82,15 +84,16 @@ def train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_
     print('------------------------------------------------------------')
 
 
-def train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=64, out_path='output/transformer.pt'):
+def train(rank, src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=64, out_path='output/transformer.pt'):
     model = model.to(device)
     model.train()
 
     since = time.time()
     print('start training ...')
     for epoch in range(0, max_epochs):
-        train_epoch(src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since)
-        save_model(model, optimizer, out_path, epoch)
+        train_epoch(rank, src_voc, tgt_voc, pairs, model, optimizer, device, epoch, batch_size, since)
+        if rank == 0:
+            save_model(model, optimizer, out_path, epoch)
     print('training completed')
 
 
@@ -127,11 +130,22 @@ def create_optimizer(model):
     return optim.Adam(model.parameters(), lr=0.0001)
 
 
-if __name__ == '__main__':
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../data')
+def train_distributed(rank, world_size, src_voc, tgt_voc, pairs, out_path):
+    setup(rank, world_size)
+    random.shuffle(pairs)
     src_vocab_size = src_voc.n_words
     tgt_vocab_size = tgt_voc.n_words
+    model = create_model(src_vocab_size, tgt_vocab_size)
+    optimizer = create_optimizer(model)
+    chunk_size = len(pairs) // world_size
+    train(rank, src_voc, tgt_voc, pairs[rank*chunk_size:(rank+1)*chunk_size], model, optimizer, device=rank, max_epochs=25, batch_size=128, out_path=out_path)
+    cleanup()
+
+
+if __name__ == '__main__':
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    src_voc, tgt_voc, pairs = prepareData('eng', 'fra', True, '../data')
+
 
     # model_size_factor = 2
     # d_model = int(512/model_size_factor)
@@ -144,11 +158,10 @@ if __name__ == '__main__':
     # trans_dropout = 0.1
     # model = TransformerMT(src_vocab_size, tgt_vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers,
     #                       dim_feedforward, max_seq_length, pos_dropout, trans_dropout)
-
     out_path = 'output/transformer.pt'
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    model = create_model(src_vocab_size, tgt_vocab_size)
-    # optimizer = optim.Adam(model.parameters(), lr=
-    optimizer = create_optimizer(model)
-    train(src_voc, tgt_voc, pairs, model, optimizer, device, max_epochs=25, batch_size=128, out_path=out_path)
-
+    world_size = torch.cuda.device_count()
+    mp.spawn(train_distributed,
+             args=(world_size, src_voc, tgt_voc, pairs, out_path),
+             nprocs=world_size,
+             join=True)
