@@ -30,7 +30,7 @@ def maskNLLLoss(inp, target, mask, device):
     nTotal = (mask == False).sum()
     # inp = inp.transpose(0, 1)
     crossEntropy = -torch.log(torch.gather(inp, 2, target.unsqueeze(2)).squeeze(2))
-    loss = crossEntropy.masked_select(mask is False).mean()
+    loss = crossEntropy.masked_select(mask == False).mean()
     loss = loss.to(device)
     return loss, nTotal.item()
 
